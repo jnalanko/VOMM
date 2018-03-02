@@ -55,7 +55,7 @@ void MS_Enumerator_tests(){
     vector<Interval> naive_intervals = enumerate_MS_intervals_naive(S,T,matches);
     assert(intervals.size() == naive_intervals.size());
     for(int64_t i = 0; i < intervals.size(); i++){
-        cout << i << " " << matches[i] << " " << intervals[i].toString() << " " << naive_intervals[i].toString() << endl;
+        //cout << i << " " << matches[i] << " " << intervals[i].toString() << " " << naive_intervals[i].toString() << endl;
         assert(intervals[i] == naive_intervals[i]);
     }
     cout << "MS enumerator test OK" << endl;

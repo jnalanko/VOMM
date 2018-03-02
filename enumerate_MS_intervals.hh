@@ -5,6 +5,8 @@
 #include <string>
 #include "String_Depth_Support.hh"
 #include "Parent_Support.hh"
+#include "Interfaces.hh"
+#include "Basic_bitvector.hh"
 #include <vector>
 
 // Matching statistics from S to T
@@ -13,7 +15,10 @@ vector<Interval> enumerate_MS_intervals(std::string S, std::string T){
     vector<Interval> result;
     
     BD_BWT_index<> index((uint8_t*)T.c_str());
-    sdsl::bit_vector rev_st_bpr = get_rev_st_topology(index);
+    std::shared_ptr<Basic_bitvector> rev_st_bpr = make_shared<Basic_bitvector>(get_rev_st_topology(index));
+    rev_st_bpr->init_bps_support();
+    rev_st_bpr->init_select_10_support();
+    rev_st_bpr->init_rank_10_support();
     Parent_Support PS(rev_st_bpr);
     
     std::vector<bool> T_alphabet(256);

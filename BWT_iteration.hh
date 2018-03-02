@@ -11,13 +11,13 @@ class Rev_ST_Iterator : public Iterator{
     
     std::stack<Stack_frame> iteration_stack;
     Stack_frame top;
-    BWT* index;
-    typename BWT::Interval_Data interval_data;
+    BIBWT* index;
+    typename BIBWT::Interval_Data interval_data;
     
     Rev_ST_Iterator() {}
-    Rev_ST_Iterator(BWT* index) : index(index) {}
+    Rev_ST_Iterator(BIBWT* index) : index(index) {}
     
-    virtual void set_index(BWT* index){
+    virtual void set_index(BIBWT* index){
         this->index = index;
     }
     
@@ -86,13 +86,13 @@ public:
     
     std::stack<Stack_frame> iteration_stack;
     Stack_frame top;
-    typename BWT::Interval_Data interval_data;
-    BWT* index;
+    typename BIBWT::Interval_Data interval_data;
+    BIBWT* index;
     
     SLT_Iterator() {} // Need to set index later
-    SLT_Iterator(BWT* index) : index(index) {}
+    SLT_Iterator(BIBWT* index) : index(index) {}
            
-    virtual void set_index(BWT* index){
+    virtual void set_index(BIBWT* index){
         this->index = index;
     }
     
@@ -144,15 +144,15 @@ public:
     
     std::stack<Stack_frame> iteration_stack;
     Stack_frame top;
-    typename BWT::Interval_Data interval_data;
-    BWT* index;
+    typename BIBWT::Interval_Data interval_data;
+    BIBWT* index;
     int64_t depth_bound;
     string label; // debug
     
     Depth_Bounded_SLT_Iterator(int64_t depth_bound) : depth_bound(depth_bound) {}
-    Depth_Bounded_SLT_Iterator(BWT* index, int64_t depth_bound) : index(index), depth_bound(depth_bound) {}
+    Depth_Bounded_SLT_Iterator(BIBWT* index, int64_t depth_bound) : index(index), depth_bound(depth_bound) {}
         
-    virtual void set_index(BWT* index){
+    virtual void set_index(BIBWT* index){
         this->index = index;
     }
 
@@ -213,13 +213,13 @@ class Rev_ST_Maxrep_Iterator : public Iterator{
     public:
     
     Stack_frame top;
-    BWT* index;
-    typename BWT::Interval_Data interval_data;
+    BIBWT* index;
+    typename BIBWT::Interval_Data interval_data;
     
     Rev_ST_Maxrep_Iterator() {}
-    Rev_ST_Maxrep_Iterator(BWT* index) : index(index) {}
+    Rev_ST_Maxrep_Iterator(BIBWT* index) : index(index) {}
     
-    virtual void set_index(BWT* index){
+    virtual void set_index(BIBWT* index){
         this->index = index;
     }
     
@@ -310,15 +310,15 @@ class Rev_ST_Depth_Bounded_Maxrep_Iterator : public Iterator{
     
     
     Stack_frame top;
-    BWT* index;
-    typename BWT::Interval_Data interval_data;
+    BIBWT* index;
+    typename BIBWT::Interval_Data interval_data;
     int64_t depth_bound;
     string label; // debug
     
     Rev_ST_Depth_Bounded_Maxrep_Iterator(int64_t depth_bound) : depth_bound(depth_bound) {}
-    Rev_ST_Depth_Bounded_Maxrep_Iterator(BWT* index, int64_t depth_bound) : index(index), depth_bound(depth_bound) {}
+    Rev_ST_Depth_Bounded_Maxrep_Iterator(BIBWT* index, int64_t depth_bound) : index(index), depth_bound(depth_bound) {}
     
-    virtual void set_index(BWT* index){
+    virtual void set_index(BIBWT* index){
         this->index = index;
     } 
     

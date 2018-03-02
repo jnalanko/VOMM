@@ -56,11 +56,12 @@ public:
     double escapeprob;
     string modeldir;
     string filename;
+    bool run_length_coding;
     
-    Scoring_Function* scorer = nullptr;
-    Loop_Invariant_Updater* updater = nullptr;
+    Scoring_Function* scorer;
+    Loop_Invariant_Updater* updater;
     
-    Scoring_Config() : only_maxreps(false), context_type(UNDEFINED), escapeprob(-1), scorer(nullptr), updater(nullptr) {}
+    Scoring_Config() : only_maxreps(false), context_type(UNDEFINED), escapeprob(-1), run_length_coding(false), scorer(nullptr), updater(nullptr) {}
     
     ~Scoring_Config(){
         delete scorer;
@@ -82,7 +83,7 @@ public:
         string path = modeldir + "/" + filename + ".info";
         ifstream file(path);
         string ctype;
-        file >> only_maxreps >> ctype;
+        file >> only_maxreps >> ctype >> run_length_coding;
         if(!file.good()){
             cerr << "Error reading file: " << path << endl;
             exit(-1);
@@ -158,7 +159,8 @@ int main(int argc, char** argv){
     
     write_log("Loading the model from " + C.modeldir);
     Global_Data G;
-    G.load_all_from_disk(C.modeldir, C.filename);
+    G.load_all_from_disk(C.modeldir, C.filename, C.run_length_coding);
+    write_log("Starting to score ");
             
     score_string(reference, G, *C.scorer, *C.updater);
           

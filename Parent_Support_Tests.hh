@@ -8,7 +8,11 @@ using namespace std;
 
 void Parent_Support_Tests(){
     sdsl::bit_vector bpr = {1, 1, 1,0,1,0, 0, 1, 1,0,1,0,1,0, 0, 0};
-    Parent_Support PS(bpr);
+    std::shared_ptr<Basic_bitvector> bprv = make_shared<Basic_bitvector>(bpr);
+    bprv->init_bps_support();
+    bprv->init_rank_10_support();
+    bprv->init_select_10_support();
+    Parent_Support PS(bprv);
 
     assert(PS.lex_parent(Interval(0,0)) == Interval(0,1));
     assert(PS.lex_parent(PS.lex_parent(Interval(0,0))) == Interval(0,4));

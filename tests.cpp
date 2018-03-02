@@ -12,10 +12,12 @@
 using namespace std;
 
 int main(int argc, char** argv){
-    
+        
     (void) argc; (void) argv; // Silence unused variable compiler warning
 
     score_string_tests();
+    test_serialization();
+    test_RLE();
     test_mark_contexts_entropy_all();
     test_mark_contexts_p_norm_all();
     test_mark_contexts_KL_all();

@@ -17,7 +17,7 @@
 
 using namespace std;
 
-double get_entropy(BWT& index, Interval_pair I_W, int64_t f_W, BWT::Interval_Data& D){
+double get_entropy(BIBWT& index, Interval_pair I_W, int64_t f_W, BIBWT::Interval_Data& D){
     double ans = 0;
     index.compute_rev_bwt_interval_data(I_W.reverse, D);
     for(int64_t i = 0; i < D.n_distinct_symbols; i++){
@@ -34,7 +34,7 @@ double get_entropy(BWT& index, Interval_pair I_W, int64_t f_W, BWT::Interval_Dat
 // Marks both opening and close parenthesis
 // Based on equations 7 of the paper A Framework for Space-efficient String Kernels.
 template <typename topology_mapper_t>
-sdsl::bit_vector mark_contexts_entropy(BWT& index, int64_t rev_st_bpr_length, double threshold,
+sdsl::bit_vector mark_contexts_entropy(BIBWT& index, int64_t rev_st_bpr_length, double threshold,
                                        Iterator& it, topology_mapper_t& mapper){
     
     sdsl::bit_vector marks(rev_st_bpr_length,0);
@@ -100,7 +100,7 @@ sdsl::bit_vector mark_contexts_entropy(BWT& index, int64_t rev_st_bpr_length, do
 }
 
 template <typename topology_mapper_t>
-sdsl::bit_vector mark_contexts_entropy(BWT& index, int64_t rev_st_bpr_length, double threshold,
+sdsl::bit_vector mark_contexts_entropy(BIBWT& index, int64_t rev_st_bpr_length, double threshold,
                                        topology_mapper_t& mapper){
     SLT_Iterator iterator(&index);
     return mark_contexts_entropy(index,rev_st_bpr_length,threshold,iterator,mapper);
@@ -116,7 +116,7 @@ sdsl::bit_vector mark_contexts_entropy(BWT& index, int64_t rev_st_bpr_length, do
 // More detailed comment about the corner cases in the brute force function for testing
 // that should do the same thing as this function
 template <typename topology_mapper_t>
-sdsl::bit_vector mark_contexts_formulas234(BWT& index, int64_t rev_st_bpr_length, double tau1,
+sdsl::bit_vector mark_contexts_formulas234(BIBWT& index, int64_t rev_st_bpr_length, double tau1,
                                       double tau2, double tau3, double tau4, Iterator& it, topology_mapper_t& mapper){
     
     assert(tau1 > 0 && tau2 > 0 && tau3 < 1 && tau3 > 0 && tau4 > 1);
@@ -171,14 +171,14 @@ sdsl::bit_vector mark_contexts_formulas234(BWT& index, int64_t rev_st_bpr_length
 }
 
 template <typename topology_mapper_t>
-sdsl::bit_vector mark_contexts_formulas234(BWT& index, int64_t rev_st_bpr_length, double tau1,
+sdsl::bit_vector mark_contexts_formulas234(BIBWT& index, int64_t rev_st_bpr_length, double tau1,
                                       double tau2, double tau3, double tau4, topology_mapper_t& mapper){
     SLT_Iterator iterator(&index);
     return mark_contexts_formulas234(index,rev_st_bpr_length,tau1,tau2,tau3,tau4,iterator,mapper);                                          
 }
 
 template <typename topology_mapper_t>
-sdsl::bit_vector mark_contexts_KL(BWT& index, int64_t rev_st_bpr_length, double threshold, Iterator& it, topology_mapper_t& mapper){
+sdsl::bit_vector mark_contexts_KL(BIBWT& index, int64_t rev_st_bpr_length, double threshold, Iterator& it, topology_mapper_t& mapper){
     
     assert(threshold >= 0);
     sdsl::bit_vector marks(rev_st_bpr_length,0);
@@ -225,13 +225,13 @@ sdsl::bit_vector mark_contexts_KL(BWT& index, int64_t rev_st_bpr_length, double 
 }
 
 template <typename topology_mapper_t>
-sdsl::bit_vector mark_contexts_KL(BWT& index, int64_t rev_st_bpr_length, double threshold, topology_mapper_t& mapper){
+sdsl::bit_vector mark_contexts_KL(BIBWT& index, int64_t rev_st_bpr_length, double threshold, topology_mapper_t& mapper){
     SLT_Iterator iterator(&index);
     return mark_contexts_KL(index,rev_st_bpr_length,threshold,iterator,mapper);     
 }
 
 template <typename topology_mapper_t>
-sdsl::bit_vector mark_contexts_p_norm(BWT& index, int64_t rev_st_bpr_length, double p, double threshold, Iterator& it, topology_mapper_t& mapper){
+sdsl::bit_vector mark_contexts_p_norm(BIBWT& index, int64_t rev_st_bpr_length, double p, double threshold, Iterator& it, topology_mapper_t& mapper){
     
     assert(threshold >= 0);
     sdsl::bit_vector marks(rev_st_bpr_length,0);
@@ -279,7 +279,7 @@ sdsl::bit_vector mark_contexts_p_norm(BWT& index, int64_t rev_st_bpr_length, dou
 }
 
 template <typename topology_mapper_t>
-sdsl::bit_vector mark_contexts_p_norm(BWT& index, int64_t rev_st_bpr_length, double p, double threshold, topology_mapper_t& mapper){
+sdsl::bit_vector mark_contexts_p_norm(BIBWT& index, int64_t rev_st_bpr_length, double p, double threshold, topology_mapper_t& mapper){
     SLT_Iterator iterator(&index);
     return mark_contexts_p_norm(index,rev_st_bpr_length,p,threshold,iterator,mapper);     
 }
@@ -295,7 +295,7 @@ public:
     
     Entropy_Formula(double threshold) : threshold(threshold) {}
     
-    virtual sdsl::bit_vector get_rev_st_context_marks(BWT* index, int64_t rev_st_bpr_size, Iterator& candidate_iterator, Topology_Mapper& mapper){
+    virtual sdsl::bit_vector get_rev_st_context_marks(BIBWT* index, int64_t rev_st_bpr_size, Iterator& candidate_iterator, Topology_Mapper& mapper){
         candidate_iterator.set_index(index);
         return mark_contexts_entropy(*index, rev_st_bpr_size, threshold, candidate_iterator, mapper);
     }
@@ -309,7 +309,7 @@ public:
     
     EQ234_Formula(double tau1, double tau2, double tau3, double tau4) : tau1(tau1), tau2(tau2), tau3(tau3), tau4(tau4) {}
     
-    sdsl::bit_vector get_rev_st_context_marks(BWT* index, int64_t rev_st_bpr_size, Iterator& candidate_iterator, Topology_Mapper& mapper){
+    sdsl::bit_vector get_rev_st_context_marks(BIBWT* index, int64_t rev_st_bpr_size, Iterator& candidate_iterator, Topology_Mapper& mapper){
         candidate_iterator.set_index(index);
         return mark_contexts_formulas234(*index, rev_st_bpr_size, tau1, tau2, tau3, tau4, candidate_iterator, mapper);
     }
@@ -323,7 +323,7 @@ public:
     
     KL_Formula(double threshold) : threshold(threshold) {}
     
-    sdsl::bit_vector get_rev_st_context_marks(BWT* index, int64_t rev_st_bpr_size, Iterator& candidate_iterator, Topology_Mapper& mapper){
+    sdsl::bit_vector get_rev_st_context_marks(BIBWT* index, int64_t rev_st_bpr_size, Iterator& candidate_iterator, Topology_Mapper& mapper){
         candidate_iterator.set_index(index);
         return mark_contexts_KL(*index, rev_st_bpr_size, threshold, candidate_iterator, mapper);
     }
@@ -338,7 +338,7 @@ public:
     
     pnorm_Formula(int64_t p, double threshold) : p(p), threshold(threshold){}
     
-    sdsl::bit_vector get_rev_st_context_marks(BWT* index, int64_t rev_st_bpr_size, Iterator& candidate_iterator, Topology_Mapper& mapper){
+    sdsl::bit_vector get_rev_st_context_marks(BIBWT* index, int64_t rev_st_bpr_size, Iterator& candidate_iterator, Topology_Mapper& mapper){
         candidate_iterator.set_index(index);
         return mark_contexts_p_norm(*index, rev_st_bpr_size, p, threshold, candidate_iterator, mapper);
     }

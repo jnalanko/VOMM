@@ -14,18 +14,31 @@
 
 using namespace std;
 
+std::shared_ptr<Basic_bitvector> get_bv_with_all_supports(sdsl::bit_vector bv){
+    std::shared_ptr<Basic_bitvector> bv2 = make_shared<Basic_bitvector>(bv);
+    bv2->init_rank_support();
+    bv2->init_select_support();
+    bv2->init_rank_10_support();
+    bv2->init_select_10_support();
+    bv2->init_bps_support();
+    return bv2;
+}
+
 void test_mark_contexts_entropy(string text, double threshold){
     //cout << "Running entropy marking with threshold " << threshold << ", text " << text << endl;
     BD_BWT_index<> index((uint8_t*)text.c_str());
-    sdsl::bit_vector rev_st_bpr = get_rev_st_topology(index);
-    sdsl::select_support_mcl<10,2> rev_st_ss_10(&rev_st_bpr);
-    sdsl::rank_support_v<10,2> rev_st_rs_10(&rev_st_bpr);
-    sdsl::bp_support_g<> rev_st_bps(&rev_st_bpr);
+    sdsl::bit_vector rev_st_bpr_sdsl = get_rev_st_topology(index);
+
+    sdsl::select_support_mcl<10,2> rev_st_ss_10(&rev_st_bpr_sdsl);
+    sdsl::rank_support_v<10,2> rev_st_rs_10(&rev_st_bpr_sdsl);
+    sdsl::bp_support_g<> rev_st_bps(&rev_st_bpr_sdsl);
     
-    Full_Topology_Mapper mapper(&rev_st_bps, &rev_st_ss_10, &rev_st_rs_10);
+    std::shared_ptr<Basic_bitvector> rev_st_bpr = get_bv_with_all_supports(rev_st_bpr_sdsl);
+    
+    Full_Topology_Mapper mapper(rev_st_bpr);
     SLT_Iterator iterator(&index);
     Entropy_Formula F(threshold);
-    sdsl::bit_vector contexts = F.get_rev_st_context_marks(&index, rev_st_bpr.size(), iterator, mapper);
+    sdsl::bit_vector contexts = F.get_rev_st_context_marks(&index, rev_st_bpr->size(), iterator, mapper);
 
     // Find substrings corresponding to contexts: the substring is the LCP of the first and last leaf of the node interval
     string text_rev(text.rbegin(), text.rend());
@@ -35,7 +48,7 @@ void test_mark_contexts_entropy(string text, double threshold){
 
     // Find labels of all marked strings
     for(int64_t i = 0; i < contexts.size(); i++){
-        if(contexts[i] == 1 && rev_st_bpr[i] == 1){
+        if(contexts[i] == 1 && rev_st_bpr_sdsl[i] == 1){
             int64_t open = i;
             int64_t close = rev_st_bps.find_close(open);
             Interval colex = bpr_interval_to_leaf_interval(Interval(open,close), rev_st_rs_10);
@@ -55,19 +68,21 @@ void test_mark_contexts_formulas_234(string text, double tau1, double tau2, doub
     //cerr << "Formulas 2,3,4 test: thresholds " << tau1 << " " << tau2 << " " << tau3 <<
     //" " << tau4 << ", text: " << text + ")" << endl;
     BD_BWT_index<> index((uint8_t*)text.c_str());
-    sdsl::bit_vector rev_st_bpr = get_rev_st_topology(index);
-    sdsl::select_support_mcl<10,2> rev_st_ss_10(&rev_st_bpr);
-    sdsl::rank_support_v<10,2> rev_st_rs_10(&rev_st_bpr);
-    sdsl::bp_support_g<> rev_st_bps(&rev_st_bpr);
+    sdsl::bit_vector rev_st_bpr_sdsl = get_rev_st_topology(index);
+    sdsl::select_support_mcl<10,2> rev_st_ss_10(&rev_st_bpr_sdsl);
+    sdsl::rank_support_v<10,2> rev_st_rs_10(&rev_st_bpr_sdsl);
+    sdsl::bp_support_g<> rev_st_bps(&rev_st_bpr_sdsl);
+    
+    std::shared_ptr<Bitvector> rev_st_bpr = get_bv_with_all_supports(rev_st_bpr_sdsl);
     
     SLT_Iterator iterator(&index);
-    Full_Topology_Mapper mapper(&rev_st_bps, &rev_st_ss_10, &rev_st_rs_10);
+    Full_Topology_Mapper mapper(rev_st_bpr);
     EQ234_Formula F(tau1,tau2,tau3,tau4);
-    sdsl::bit_vector contexts = F.get_rev_st_context_marks(&index, rev_st_bpr.size(), iterator, mapper);
+    sdsl::bit_vector contexts = F.get_rev_st_context_marks(&index, rev_st_bpr_sdsl.size(), iterator, mapper);
     
     vector<string> context_strings;
     for(int64_t i = 0; i < contexts.size(); i++){
-        if(contexts[i] == 1 && rev_st_bpr[i] == 1){
+        if(contexts[i] == 1 && rev_st_bpr_sdsl[i] == 1){
             int64_t open = i;
             int64_t close = rev_st_bps.find_close(open);
             string label = bpr_node_to_string(text,open,close,rev_st_rs_10);
@@ -85,19 +100,21 @@ void test_mark_contexts_formulas_234(string text, double tau1, double tau2, doub
 void test_mark_contexts_KL(string text, double threshold){
     //cerr << "KL marking test, threshold: " << threshold << ", text: " << text << endl;
     BD_BWT_index<> index((uint8_t*)text.c_str());
-    sdsl::bit_vector rev_st_bpr = get_rev_st_topology(index);
-    sdsl::select_support_mcl<10,2> rev_st_ss_10(&rev_st_bpr);
-    sdsl::rank_support_v<10,2> rev_st_rs_10(&rev_st_bpr);
-    sdsl::bp_support_g<> rev_st_bps(&rev_st_bpr);
+    sdsl::bit_vector rev_st_bpr_sdsl = get_rev_st_topology(index);
+    sdsl::select_support_mcl<10,2> rev_st_ss_10(&rev_st_bpr_sdsl);
+    sdsl::rank_support_v<10,2> rev_st_rs_10(&rev_st_bpr_sdsl);
+    sdsl::bp_support_g<> rev_st_bps(&rev_st_bpr_sdsl);
+    
+    std::shared_ptr<Bitvector> rev_st_bpr = get_bv_with_all_supports(rev_st_bpr_sdsl);
     
     SLT_Iterator iterator(&index);
-    Full_Topology_Mapper mapper(&rev_st_bps, &rev_st_ss_10, &rev_st_rs_10);
+    Full_Topology_Mapper mapper(rev_st_bpr);
     KL_Formula F(threshold);
-    sdsl::bit_vector contexts = F.get_rev_st_context_marks(&index, rev_st_bpr.size(), iterator, mapper);
+    sdsl::bit_vector contexts = F.get_rev_st_context_marks(&index, rev_st_bpr_sdsl.size(), iterator, mapper);
     
     vector<string> context_strings;
     for(int64_t i = 0; i < contexts.size(); i++){
-        if(contexts[i] == 1 && rev_st_bpr[i] == 1){
+        if(contexts[i] == 1 && rev_st_bpr_sdsl[i] == 1){
             int64_t open = i;
             int64_t close = rev_st_bps.find_close(open);
             string label = bpr_node_to_string(text,open,close,rev_st_rs_10);
@@ -115,19 +132,21 @@ void test_mark_contexts_KL(string text, double threshold){
 void test_mark_contexts_p_norm(string text, double p, double threshold){
     //cerr << "p_norm marking test, p: " << p << ", threshold: " << threshold << ", text: " << text << endl;
     BD_BWT_index<> index((uint8_t*)text.c_str());
-    sdsl::bit_vector rev_st_bpr = get_rev_st_topology(index);
-    sdsl::select_support_mcl<10,2> rev_st_ss_10(&rev_st_bpr);
-    sdsl::rank_support_v<10,2> rev_st_rs_10(&rev_st_bpr);
-    sdsl::bp_support_g<> rev_st_bps(&rev_st_bpr);
+    sdsl::bit_vector rev_st_bpr_sdsl = get_rev_st_topology(index);
+    sdsl::select_support_mcl<10,2> rev_st_ss_10(&rev_st_bpr_sdsl);
+    sdsl::rank_support_v<10,2> rev_st_rs_10(&rev_st_bpr_sdsl);
+    sdsl::bp_support_g<> rev_st_bps(&rev_st_bpr_sdsl);
+    
+    std::shared_ptr<Bitvector> rev_st_bpr = get_bv_with_all_supports(rev_st_bpr_sdsl);
     
     SLT_Iterator iterator(&index);
-    Full_Topology_Mapper mapper(&rev_st_bps, &rev_st_ss_10, &rev_st_rs_10);
+    Full_Topology_Mapper mapper(rev_st_bpr);
     pnorm_Formula F(p,threshold);
-    sdsl::bit_vector contexts = F.get_rev_st_context_marks(&index, rev_st_bpr.size(), iterator, mapper);
+    sdsl::bit_vector contexts = F.get_rev_st_context_marks(&index, rev_st_bpr_sdsl.size(), iterator, mapper);
     
     vector<string> context_strings;
     for(int64_t i = 0; i < contexts.size(); i++){
-        if(contexts[i] == 1 && rev_st_bpr[i] == 1){
+        if(contexts[i] == 1 && rev_st_bpr_sdsl[i] == 1){
             int64_t open = i;
             int64_t close = rev_st_bps.find_close(open);
             string label = bpr_node_to_string(text,open,close,rev_st_rs_10);

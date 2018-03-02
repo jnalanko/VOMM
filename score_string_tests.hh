@@ -106,8 +106,8 @@ double score_string_entropy_non_brute(string S, string T, bool maxreps_only, dou
         rev_slt_iterator_t rev_slt_it;
         
         Entropy_Formula formula(threshold);
-        Global_Data G = build_model
-            (T, formula, slt_it, rev_slt_it, slt_it, false);
+        Global_Data G; 
+        build_model(G, T, formula, slt_it, rev_slt_it, slt_it, true, false);
         scorer_t scorer(escape_prob, true);
         updater_t updater;
         return score_string(S, G, scorer, updater);
@@ -122,8 +122,8 @@ double score_string_entropy_non_brute(string S, string T, bool maxreps_only, dou
         slt_iterator_t slt_it;
         rev_slt_iterator_t rev_slt_it;
         Entropy_Formula formula(threshold);
-        Global_Data G = build_model
-            (T, formula, slt_it, rev_slt_it, slt_it, false);
+        Global_Data G;
+        build_model(G, T, formula, slt_it, rev_slt_it, slt_it, true, false);
         scorer_t scorer(escape_prob, true);
         updater_t updater;
         return score_string(S, G, scorer, updater);    
@@ -145,6 +145,50 @@ void test_entropy(string S, string T, double threshold, double escape){
     assert(fabs(brute-non_brute_2) < 1e-6);
 }
 
+void test_serialization(){
+    cerr << "Running serialization tests" << endl;
+    
+    srand(11112223);
+    string T = get_random_string(300,3);
+    string S = get_random_string(300,3);
+    double threshold = 0.2;
+    double escape_prob = 0.05;
+         
+    SLT_Iterator slt_it;
+    Rev_ST_Maxrep_Iterator rev_slt_it;
+    Entropy_Formula formula(threshold);
+    Global_Data G1;
+    build_model(G1, T, formula, slt_it, rev_slt_it, slt_it, true, false);
+    G1.store_all_to_disk("models","test");
+    Global_Data G2;
+    G2.load_all_from_disk("models","test",true);
+    
+    Basic_Scorer scorer(escape_prob, true);
+    Maxrep_Pruned_Updater updater;
+    assert(score_string(S, G2, scorer, updater) == score_string_entropy_brute(S,T,threshold,escape_prob));
+}
+
+void test_RLE(){
+    cerr << "Running RLE tests" << endl;
+    
+    srand(1412341);
+    string T = get_random_string(300,3);
+    string S = get_random_string(300,3);
+    double threshold = 0.2;
+    double escape_prob = 0.05;
+         
+    SLT_Iterator slt_it;
+    Rev_ST_Maxrep_Iterator rev_slt_it;
+    Entropy_Formula formula(threshold);
+    Global_Data G_RLE;
+    build_model(G_RLE, T, formula, slt_it, rev_slt_it, slt_it, true, false);
+    Global_Data G_non_RLE;
+    build_model(G_non_RLE, T, formula, slt_it, rev_slt_it, slt_it, false, false);
+    
+    Basic_Scorer scorer(escape_prob, true);
+    Maxrep_Pruned_Updater updater;
+    assert(score_string(S, G_RLE, scorer, updater) == score_string(S, G_non_RLE, scorer, updater));
+}
 
 void score_string_random_tests(int64_t number){
     cerr << "Running random score string tests for all context types" << endl;
@@ -176,8 +220,8 @@ void score_string_random_tests(int64_t number){
             slt_it_t context_it(depth_bound);
             Entropy_Formula formula(threshold);
             
-            Global_Data G = build_model
-                (T, formula, slt_it, rev_slt_it, context_it, false);
+            Global_Data G; 
+            build_model(G, T, formula, slt_it, rev_slt_it, context_it, true, false);
                                 
             Basic_Scorer scorer(escape, true);
             Maxrep_Depth_Bounded_Updater updater;
@@ -204,8 +248,8 @@ void score_string_random_tests(int64_t number){
             slt_it_t context_it(depth_bound-1); // -1 because contexts are of form aW
             KL_Formula formula(threshold);
             
-            Global_Data G = build_model
-                (T, formula, slt_it, rev_slt_it, context_it, false);
+            Global_Data G;
+            build_model(G, T, formula, slt_it, rev_slt_it, context_it, true, false);
                 
             int64_t asd = 0; // debug start
             for(string C : contexts) if(C.size() <= depth_bound) asd++;
@@ -234,13 +278,8 @@ void score_string_random_tests(int64_t number){
             EQ234_Formula formula(t1,t2,t3,t4);
 
             
-            Global_Data G = build_model
-                  (T, formula, slt_it, rev_slt_it, slt_it, false);
-                    
-            if(i == 0){
-                G.store_all_to_disk("index","test");
-                G.load_all_from_disk("index","test");
-            }
+            Global_Data G; 
+            build_model(G, T, formula, slt_it, rev_slt_it, slt_it, true, false);
 
             Basic_Scorer scorer(escape, false);
             Maxrep_Pruned_Updater updater;
@@ -266,8 +305,8 @@ void score_string_random_tests(int64_t number){
             
             KL_Formula formula(threshold);
             
-            Global_Data G = build_model
-                  (T, formula, slt_it, rev_slt_it, slt_it, false);
+            Global_Data G; 
+            build_model(G, T, formula, slt_it, rev_slt_it, slt_it, true, false);
 
             Basic_Scorer scorer(escape, false);
             Maxrep_Pruned_Updater updater;
@@ -292,8 +331,8 @@ void score_string_random_tests(int64_t number){
             
             pnorm_Formula formula(p,threshold);
             
-            Global_Data G = build_model
-                  (T, formula, slt_it, rev_slt_it, slt_it, false);
+            Global_Data G;
+            build_model(G, T, formula, slt_it, rev_slt_it, slt_it, true, false);
 
             Basic_Scorer scorer(escape, false);
             Maxrep_Pruned_Updater updater;

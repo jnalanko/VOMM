@@ -70,14 +70,16 @@ public:
     Context_Type context_type;
     string outputdir;
     string input_filename;
+    bool run_length_encoding;
     
-    Context_Formula* cf = nullptr;
+    Context_Formula* cf;
     
-    Iterator* rev_st_it = nullptr;
-    Iterator* slt_it = nullptr;
-    Iterator* context_candidate_it = nullptr;
+    Iterator* rev_st_it;
+    Iterator* slt_it;
+    Iterator* context_candidate_it;
     
-    Build_Time_Config() : only_maxreps(false), depth_bound(HUGE_NUMBER), context_type(UNDEFINED), cf(nullptr), rev_st_it(nullptr), slt_it(nullptr) {}
+    Build_Time_Config() : only_maxreps(false), depth_bound(HUGE_NUMBER), context_type(UNDEFINED), run_length_encoding(false), 
+                          cf(nullptr), rev_st_it(nullptr), slt_it(nullptr), context_candidate_it(nullptr) {}
     
     ~Build_Time_Config(){
         delete cf;
@@ -113,7 +115,7 @@ public:
     void write_to_file(string directory, string filename){
         ofstream file(directory + "/" + filename);
         
-        file << only_maxreps << "\n" << context_type_to_string(context_type) << "\n";
+        file << only_maxreps << "\n" << context_type_to_string(context_type) << "\n" << run_length_encoding << "\n";
         
         if(!file.good()){
             cerr << "Error writing to file " << filename << endl;
@@ -149,6 +151,8 @@ int main(int argc, char** argv){
             C.rev_st_it = new Rev_ST_Maxrep_Iterator();
             C.slt_it = new SLT_Iterator();
             C.only_maxreps = true;
+        } else if(argv[i] == string("--rle")){
+            C.run_length_encoding = true;
         } else if(argv[i] == string("--depth")){ // Assumes also maxrep pruning
             i++;
             int64_t bound = stoi(argv[i]);
@@ -209,9 +213,9 @@ int main(int argc, char** argv){
     C.assert_all_ok();
     
     string filename = split(C.input_filename,'/').back();
-    write_log("Staring to build the model");
-    Global_Data G = build_model
-        (reference, *C.cf, *C.slt_it, *C.rev_st_it, *C.slt_it, false);
+    write_log("Starting to build the model");
+    Global_Data G;
+    build_model(G, reference, *C.cf, *C.slt_it, *C.rev_st_it, *C.slt_it, C.run_length_encoding, false);
     write_log("Writing model to directory: " + C.outputdir);
     
     G.store_all_to_disk(C.outputdir, filename);

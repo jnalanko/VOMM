@@ -11,8 +11,13 @@
 #include "context_marking.hh"
 #include "Interfaces.hh"
 #include "BPR_Colex_mapping.hh"
+#include "UniBWT.h"
+#include "RLEBWT.hh"
+#include "Basic_bitvector.hh"
+#include "RLE_bitvector.hh"
 #include <stack>
 #include <vector>
+#include <memory>
 
 class Full_Topology_Mapper;
 
@@ -20,15 +25,15 @@ class Full_Topology_Mapper;
 //enum Context_Type {ENTROPY,EQ234,PNORM,KL}; // Should be made into a class so it can take arbitrary parameters for thresholds
 
 sdsl::bit_vector get_rev_st_bpr_context_only(Global_Data* G){ // Todo: move to precalc.hh?
-    int64_t nMarked = G->rev_st_context_marks_rs.rank(G->rev_st_context_marks.size());
+    int64_t nMarked = G->rev_st_context_marks->rank(G->rev_st_context_marks->size());
     
     // Build bpr for marked only
 
     sdsl::bit_vector rev_st_bpr_context_only(nMarked);
     int64_t k = 0;
-    for(int64_t i = 0; i < G->rev_st_bpr.size(); i++){
-        if((G->rev_st_context_marks)[i]){
-            rev_st_bpr_context_only[k] = (G->rev_st_bpr)[i];
+    for(int64_t i = 0; i < G->rev_st_bpr->size(); i++){
+        if(G->rev_st_context_marks->at(i)){
+            rev_st_bpr_context_only[k] = G->rev_st_bpr->at(i);
             k++;
         }
     }
@@ -62,7 +67,7 @@ public:
     }
     
     node_t rev_st_parent(node_t node){
-        int64_t close = data->rev_st_bps.find_close(node);
+        int64_t close = data->rev_st_bpr->find_close(node);
         return PS.parent(Interval(node,close)).left;
     }
     
@@ -82,14 +87,14 @@ public:
 
 double main_loop(string& S, Global_Data& data, Topology& topo_alg, Scoring_Function& scorer, Loop_Invariant_Updater& updater){
     double logprob = 0;
-    Interval I(0,data.bibwt.size()-1); // todo: or: index.empty_string()
+    Interval I(0,data.revbwt->size()-1); // todo: or: index.empty_string()
     int64_t string_depth = 0;
     for(int64_t i = 0; i < S.size(); i++){
         // Compute probability of S[i]
-        logprob += log2(scorer.score(I, string_depth, S[i], topo_alg, data.bibwt));
+        logprob += log2(scorer.score(I, string_depth, S[i], topo_alg, *data.revbwt));
         
         // Update I and string_depth
-        pair<Interval, int64_t> new_values = updater.update(I, string_depth, S[i], data, topo_alg, data.bibwt);
+        pair<Interval, int64_t> new_values = updater.update(I, string_depth, S[i], data, topo_alg, *data.revbwt);
         I = new_values.first;
         string_depth = new_values.second;
     }
@@ -99,24 +104,17 @@ double main_loop(string& S, Global_Data& data, Topology& topo_alg, Scoring_Funct
 template<typename T> void init_support(T&, Global_Data*);
 
 template<> void init_support<LMA_Support>(LMA_Support& LMAS, Global_Data* G){
-    LMAS = LMA_Support(&G->rev_st_context_marks,
-             &G->rev_st_context_marks_rs, 
-             &G->rev_st_context_marks_ss, 
-             &G->rev_st_bpr_context_only,
-             &G->rev_st_bpr_context_only_bps);
+    LMAS = LMA_Support(G->rev_st_context_marks,
+             G->rev_st_bpr_context_only);
 
 }
 
 template<> void init_support<Parent_Support>(Parent_Support& PS, Global_Data* G){
-    PS = Parent_Support(&G->rev_st_ss_10, &G->rev_st_rs_10, &G->rev_st_bps);
+    PS = Parent_Support(G->rev_st_bpr);
 }
 
 template<> void init_support<String_Depth_Support>(String_Depth_Support& SDS, Global_Data* G){
-    SDS = String_Depth_Support(&G->rev_st_ss_10,
-            &G->rev_st_bps,
-            &G->rev_st_maximal_marks_rs,
-            &G->slt_maximal_marks_ss,
-            &G->slt_bps);
+    SDS = String_Depth_Support(G->rev_st_bpr,G->slt_bpr,G->rev_st_maximal_marks,G->slt_maximal_marks);
 }
 
 template<> void init_support<String_Depth_Support_Store_All>(String_Depth_Support_Store_All& SDS, Global_Data* G){
@@ -124,11 +122,11 @@ template<> void init_support<String_Depth_Support_Store_All>(String_Depth_Suppor
 }
 
 template<> void init_support<Full_Topology_Mapper>(Full_Topology_Mapper& mapper, Global_Data* G){
-    mapper = Full_Topology_Mapper(&G->rev_st_bps, &G->rev_st_ss_10, &G->rev_st_rs_10);
+    mapper = Full_Topology_Mapper(G->rev_st_bpr);
 }
 
 template<> void init_support<Pruned_Topology_Mapper>(Pruned_Topology_Mapper& mapper, Global_Data* G){
-    mapper = Pruned_Topology_Mapper(&G->rev_st_bps, &G->rev_st_ss_10, &G->rev_st_rs_10, &G->pruning_marks_rs, &G->pruning_marks_ss);
+    mapper = Pruned_Topology_Mapper(G->rev_st_bpr, G->pruning_marks);
 }
 
 class Maxrep_Pruned_Updater : public Loop_Invariant_Updater {
@@ -140,7 +138,7 @@ public:
         bool first_iteration = true;
         
         // Take parents until right-extension succeeds
-        while(index.right_extend(Interval_pair(Interval(0,0), I),c).reverse.size() == 0){
+        while(index.search(I,c).size() == 0){
             if(first_iteration){
                 // Go up the nearest non-pruned node (maxrep)
                 I = topology.node_to_leaves(topology.leaves_to_node(I));
@@ -159,17 +157,17 @@ public:
         if(parent_taken){
             // Need to recalculate depth
             int64_t bpr_pos = topology.leaves_to_node(I);
-            if(data.rev_st_maximal_marks[bpr_pos]){
+            if(data.rev_st_maximal_marks->at(bpr_pos)){
                 d = topology.rev_st_string_depth(bpr_pos);
             } else{
                 int64_t parent = topology.rev_st_parent(bpr_pos);
-                assert(data.rev_st_maximal_marks[parent]); // Should be at a maxrep
+                assert(data.rev_st_maximal_marks->at(parent)); // Should be at a maxrep
                 d = topology.rev_st_string_depth(parent) + 1; // One character left-extension of a maxrep
             }
             
         }
                 
-        return {index.right_extend(Interval_pair(Interval(0,0), I),c).reverse, d+1};
+        return {index.search(I,c), d+1};
     }
 };
 
@@ -180,7 +178,7 @@ public:
     virtual pair<Interval, int64_t> update(Interval I, int64_t d, char c, Global_Data& data, Topology& topology, BWT& index){
         (void) data; // Not needed. Make the compiler happy.
         bool parent_taken = false;
-        while(index.right_extend(Interval_pair(Interval(0,0), I),c).reverse.size() == 0){
+        while(index.search(I,c).size() == 0){
             int64_t node = topology.leaves_to_node(I); // Map to topology
             node = topology.rev_st_parent(node); // Take parent
             I = topology.node_to_leaves(node); // Map back to colex interval
@@ -190,11 +188,11 @@ public:
         
         if(parent_taken){
             // Need to recalculate depth
-            assert(data.rev_st_maximal_marks[topology.leaves_to_node(I)]); // Should be at a maxrep
+            assert(data.rev_st_maximal_marks->at(topology.leaves_to_node(I))); // Should be at a maxrep
             d = topology.rev_st_string_depth(topology.leaves_to_node(I)); // Guaranteed to be at a maxrep
         }
         
-        return {index.right_extend(Interval_pair(Interval(0,0), I),c).reverse, d+1};
+        return {index.search(I,c), d+1};
     }
 };
 
@@ -207,7 +205,7 @@ public:
     virtual pair<Interval, int64_t> update(Interval I, int64_t d, char c, Global_Data& data, Topology& topology, BWT& index){
         bool parent_taken = false;
         bool first_iteration = true;
-        while(index.right_extend(Interval_pair(Interval(0,0), I),c).reverse.size() == 0){
+        while(index.search(I,c).size() == 0){
             if(first_iteration){
                 // Go up the the nearest non-pruned node
                 I = topology.node_to_leaves(topology.leaves_to_node(I));
@@ -226,17 +224,17 @@ public:
         if(parent_taken){
             // Need to recalculate depth
             int64_t bpr_pos = topology.leaves_to_node(I);
-            if(data.rev_st_maximal_marks[bpr_pos]){
+            if(data.rev_st_maximal_marks->at(bpr_pos)){
                 d = topology.rev_st_string_depth(bpr_pos);
             } else{
                 int64_t parent = topology.rev_st_parent(bpr_pos);
-                assert(data.rev_st_maximal_marks[parent]); // Should be at a maxrep
+                assert(data.rev_st_maximal_marks->at(parent)); // Should be at a maxrep
                 d = topology.rev_st_string_depth(parent) + 1; // One character left-extension of a maxrep
             }
             
         }
         
-        return {index.right_extend(Interval_pair(Interval(0,0), I),c).reverse, d+1};
+        return {index.search(I,c), d+1};
     }
 };
 
@@ -264,58 +262,72 @@ public:
         I = topology.node_to_leaves(node);
 
         // Compute the probability of S[i]
-        Interval_pair R = index.right_extend(Interval_pair(Interval(0,0), I), c); // Don't care about the forward interval
+        Interval R = index.search(I, c);
         
-        if(R.reverse.size() == 0){
+        if(R.size() == 0){
            return escape_prob;
         } else{
             // don't count in the dollar the context in the interval of the empty string, hence -1
-            return (double)R.reverse.size() / min(I.size(), index.size()-1);
+            return (double)R.size() / min(I.size(), index.size()-1);
         }
     }
 
 };
 
-Global_Data build_model(string& T, Context_Formula& context_formula,
+// All components of the model will be stored into G
+void build_model(Global_Data& G, string& T, Context_Formula& context_formula,
                         Iterator& slt_it, Iterator& rev_slt_it, Iterator& context_candidate_iterator,
-                        bool compute_string_depths){
+                        bool run_length_coding, bool compute_string_depths){
         
     
-    Global_Data G;
+    BD_BWT_index<> bibwt((uint8_t*)T.c_str());
     
-    G.bibwt = BD_BWT_index<>((uint8_t*)T.c_str());
-    slt_it.set_index(&G.bibwt);
-    rev_slt_it.set_index(&G.bibwt);
+    slt_it.set_index(&bibwt);
+    rev_slt_it.set_index(&bibwt);
     
-    Rev_st_topology RSTT = get_rev_st_bpr_and_pruning(G.bibwt, rev_slt_it);
-    G.rev_st_bpr = RSTT.bpr; // todo: merge with get pruning
+    Rev_st_topology RSTT = get_rev_st_bpr_and_pruning(bibwt, rev_slt_it);
+    G.rev_st_bpr = std::shared_ptr<Bitvector>(new Basic_bitvector(RSTT.bpr));
     
-    sdsl::util::init_support(G.rev_st_ss_10, &G.rev_st_bpr);
-    sdsl::util::init_support(G.rev_st_rs_10, &G.rev_st_bpr);
-    sdsl::util::init_support(G.rev_st_bps, &G.rev_st_bpr);
-        
-    G.pruning_marks = RSTT.pruning_marks; // todo: merge with get bpr
+    G.rev_st_bpr->init_rank_10_support();
+    G.rev_st_bpr->init_select_10_support();
+    G.rev_st_bpr->init_bps_support();
     
-    sdsl::util::init_support(G.pruning_marks_rs, &G.pruning_marks);
-    sdsl::util::init_support(G.pruning_marks_ss, &G.pruning_marks);
+    if(run_length_coding){
+        G.pruning_marks = std::shared_ptr<Bitvector>(new RLE_bitvector(RSTT.pruning_marks));
+    } else{
+        G.pruning_marks = std::shared_ptr<Bitvector>(new Basic_bitvector(RSTT.pruning_marks));
+    }
     
-    Pruned_Topology_Mapper mapper(&G.rev_st_bps, &G.rev_st_ss_10, &G.rev_st_rs_10, &G.pruning_marks_rs, &G.pruning_marks_ss);
+    G.pruning_marks->init_rank_support();
+    G.pruning_marks->init_select_support();
+    
+    Pruned_Topology_Mapper mapper(G.rev_st_bpr, G.pruning_marks);
             
-    G.rev_st_maximal_marks = get_rev_st_maximal_marks(G.bibwt, G.rev_st_bpr.size(), rev_slt_it, mapper);
-    sdsl::util::init_support(G.rev_st_maximal_marks_rs, &G.rev_st_maximal_marks);
+    G.rev_st_maximal_marks = std::shared_ptr<Bitvector>(new Basic_bitvector(get_rev_st_maximal_marks(bibwt, G.rev_st_bpr->size(), rev_slt_it, mapper)));
+    G.rev_st_maximal_marks->init_rank_support();
     
-    G.rev_st_context_marks = context_formula.get_rev_st_context_marks(&G.bibwt, G.rev_st_bpr.size(), context_candidate_iterator, mapper);
-    sdsl::util::init_support(G.rev_st_context_marks_rs, &G.rev_st_context_marks);
-    sdsl::util::init_support(G.rev_st_context_marks_ss, &G.rev_st_context_marks);
+    G.rev_st_context_marks = std::shared_ptr<Bitvector>(new Basic_bitvector(context_formula.get_rev_st_context_marks(&bibwt, G.rev_st_bpr->size(), context_candidate_iterator, mapper)));
+    G.rev_st_context_marks->init_rank_support();
+    G.rev_st_context_marks->init_select_support();
     
-    G.rev_st_bpr_context_only = get_rev_st_bpr_context_only(&G);
-    sdsl::util::init_support(G.rev_st_bpr_context_only_bps, &G.rev_st_bpr_context_only);
+    G.rev_st_bpr_context_only = std::shared_ptr<Bitvector>(new Basic_bitvector(get_rev_st_bpr_context_only(&G)));
+    G.rev_st_bpr_context_only->init_bps_support();
     
-    G.slt_bpr = get_slt_topology(G.bibwt, slt_it);
-    sdsl::util::init_support(G.slt_bps, &G.slt_bpr);
+    sdsl::bit_vector sdsl_slt_bpr = get_slt_topology(bibwt, slt_it);
+    if(run_length_coding){
+        G.slt_bpr = std::shared_ptr<Bitvector>(new RLE_bitvector(sdsl_slt_bpr));
+    } else{
+        G.slt_bpr = std::shared_ptr<Bitvector>(new Basic_bitvector(sdsl_slt_bpr));
+    }
+    G.slt_bpr->init_rank_support();
     
-    G.slt_maximal_marks = get_slt_maximal_marks(G.bibwt, G.slt_bpr, slt_it);
-    sdsl::util::init_support(G.slt_maximal_marks_ss, &G.slt_maximal_marks);
+    if(run_length_coding){
+        G.slt_maximal_marks = std::shared_ptr<Bitvector>(new RLE_bitvector(get_slt_maximal_marks(bibwt, sdsl_slt_bpr, slt_it)));
+    } else{
+        G.slt_maximal_marks = std::shared_ptr<Bitvector>(new Basic_bitvector(get_slt_maximal_marks(bibwt, sdsl_slt_bpr, slt_it)));
+    }
+    G.slt_maximal_marks->init_rank_support();
+    G.slt_maximal_marks->init_select_support();
     
     if(compute_string_depths){
         cerr << "Not implemented error: compute string depths" << endl;
@@ -323,9 +335,16 @@ Global_Data build_model(string& T, Context_Formula& context_formula,
         //G.string_depths = CA.get_rev_st_string_depths(G.bibwt, G.rev_st_bpr.size(), mapper);
     }
     
-    //cout << G.toString() << endl;
+    // Store reverse BWT for scoring. Todo: reuse already computed bibwt
+    string T_reverse(T.rbegin(), T.rend());
+    if(run_length_coding){
+        BWT* bwt = new RLEBWT<>((uint8_t*)T_reverse.c_str());
+        G.revbwt = std::move(std::unique_ptr<BWT>(bwt)); // transfer ownership to G
+    } else{
+        BWT* bwt = new Basic_BWT<>((uint8_t*)T_reverse.c_str());
+        G.revbwt = std::move(std::unique_ptr<BWT>(bwt)); // transfer ownership to G
+    }
     
-    return G;
     
 }
 
@@ -335,6 +354,7 @@ template <typename index_t = BD_BWT_index<>,
           typename LMA_Support_t = LMA_Support>
 double score_string(string& S, Global_Data& G, Scoring_Function& scorer, Loop_Invariant_Updater& updater){
 
+    assert(G.revbwt != nullptr);
     Pruned_Topology_Mapper mapper; // Also works for non-pruned topology
     init_support(mapper, &G);
     

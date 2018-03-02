@@ -8,6 +8,7 @@
 #include "sdsl/bp_support_g.hpp"
 #include "sdsl/util.hpp"
 #include "globals.hh"
+#include "Interfaces.hh"
 
 // The purpose of this class is to provide functions to map a lexicographic
 // range into the lexicographic range of the parent
@@ -15,27 +16,12 @@ class Parent_Support{
     
 public:
     
-    sdsl::select_support_mcl<10,2>* ss_10; // find the i-th leaf in the bpr
-    sdsl::rank_support_v<10,2>* rs_10; // inverse of find the i-th leaf
-    sdsl::bp_support_g<>* bps; // enclose (= parent)
+    std::shared_ptr<Bitvector> bpr;
     
     Parent_Support() {};
-    Parent_Support(sdsl::select_support_mcl<10,2>* ss_10, sdsl::rank_support_v<10,2>* rs_10, sdsl::bp_support_g<>* bps) :
-        ss_10(ss_10), rs_10(rs_10), bps(bps) {}
+    Parent_Support(std::shared_ptr<Bitvector> bpr) :
+        bpr(bpr) {}
         
-    // Constructor for the lazy and tests
-    Parent_Support(sdsl::bit_vector& bpr){
-        
-        // TODO: These leak memory. Can't just delete in destructor because of the other constructor.
-        this->ss_10 = new sdsl::select_support_mcl<10,2>();
-        this->rs_10 = new sdsl::rank_support_v<10,2>();
-        this->bps = new sdsl::bp_support_g<>();
-
-        sdsl::util::init_support(*this->ss_10, &bpr);
-        sdsl::util::init_support(*this->rs_10, &bpr);
-        sdsl::util::init_support(*this->bps, &bpr);
-    }
-    
     Interval lex_parent(Interval I){ // TODO: delete
         return topology_to_lex(parent(lex_to_topology(I)));
     }
@@ -51,30 +37,30 @@ public:
     Interval parent(Interval I){ // Takes a topology interval
         if(I.left == 0) return I; // Root
         else{
-            int64_t open = bps->enclose(I.left);
-            int64_t close = bps->find_close(open);
+            int64_t open = bpr->enclose(I.left);
+            int64_t close = bpr->find_close(open);
             return Interval(open,close);
         }
     } 
     
     Interval topology_to_lex(Interval I){ // Takes a topology interval. TODO: DELETE (not the responsibility of this class)
-        int64_t left = rs_10->rank(I.left);
-        int64_t right = rs_10->rank(I.right + 1) - 1;
+        int64_t left = bpr->rank_10(I.left);
+        int64_t right = bpr->rank_10(I.right + 1) - 1;
         return Interval(left,right);
     }
         
 private:
     
     Interval get_leaf_bpr(int64_t leaf_rank){
-        int64_t close = ss_10->select(leaf_rank+1); // Indexing starts from 1, hence the +1
+        int64_t close = bpr->select_10(leaf_rank+1); // Indexing starts from 1, hence the +1
         return Interval(close-1,close);
     }
 
     // A must be to the left of B and B can not be nested inside A
     Interval LCA(Interval A, Interval B){
         assert(A.right < B.left);
-        int64_t open = bps->double_enclose(A.left, B.left);
-        int64_t close = bps->find_close(open);
+        int64_t open = bpr->double_enclose(A.left, B.left);
+        int64_t close = bpr->find_close(open);
         return Interval(open,close);
     }
 

@@ -2,6 +2,7 @@
 #define LMA_SUPPORT_TESTS
 
 #include "LMA_Support.hh"
+#include "Basic_bitvector.hh"
 #include <iostream>
 
 using namespace std;
@@ -14,9 +15,36 @@ int64_t LMA_naive(int64_t open, sdsl::bp_support_g<>& bpr_bps, sdsl::bit_vector&
     return open;
 }
 
+sdsl::bit_vector get_bpr_marked_only(sdsl::bit_vector& bpr, sdsl::bit_vector& marks){
+    // Build bpr for marked only
+    
+    int64_t nMarked = 0;
+    for(int i = 0; i < marks.size(); i++) nMarked += marks[i];
+    
+    sdsl::bit_vector bpr_marked_only(nMarked);
+    int64_t k = 0;
+    for(int64_t i = 0; i < marks.size(); i++){
+        if(marks[i]){
+            bpr_marked_only[k] = bpr[i];
+            k++;
+        }
+    }
+    
+    return bpr_marked_only;
+}
+
 void test_all_queries(sdsl::bit_vector& bpr, sdsl::bit_vector& marks){
-    // Test all queries
-    LMA_Support nmas(bpr,marks);
+    // Test all queries   
+    
+    shared_ptr<Basic_bitvector> marksv = make_shared<Basic_bitvector>(marks);
+    marksv->init_rank_support();
+    marksv->init_select_support();
+    
+    sdsl::bit_vector bpr_marked_only = get_bpr_marked_only(bpr, marks);
+    shared_ptr<Basic_bitvector> bpr_marked_only_v = make_shared<Basic_bitvector>(bpr_marked_only);
+    bpr_marked_only_v->init_bps_support();
+    
+    LMA_Support nmas(marksv, bpr_marked_only_v);
     sdsl::bp_support_g<> bpr_bps;
     sdsl::util::init_support(bpr_bps, &bpr);
     for(int64_t open = 0; open < bpr.size(); open++){
@@ -79,7 +107,7 @@ void test_random(int64_t N, double marked_prob){
     // Test
     test_all_queries(bpr,marks);
     
-    cout << "Lowest marked ancestor " << N << " " << marked_prob << " test OK" << endl;
+    //cout << "Lowest marked ancestor " << N << " " << marked_prob << " test OK" << endl;
     
 }
 
@@ -89,7 +117,15 @@ void LMA_testcase1(){
     sdsl::bit_vector bpr =   {1,1,1,1,1,0,1,0,0,1,1,0,1,1,0,1,1,0,0,0,0,0,1,1,0,0,0,0};
     sdsl::bit_vector marks = {1,0,0,1,0,0,0,0,1,1,1,1,0,0,0,1,0,0,1,0,1,0,1,0,0,1,0,1};
     
-    LMA_Support nmas(bpr,marks);
+    shared_ptr<Basic_bitvector> marksv = make_shared<Basic_bitvector>(marks);
+    marksv->init_rank_support();
+    marksv->init_select_support();
+    
+    sdsl::bit_vector bpr_marked_only = get_bpr_marked_only(bpr, marks);
+    shared_ptr<Basic_bitvector> bpr_marked_only_v = make_shared<Basic_bitvector>(bpr_marked_only);
+    bpr_marked_only_v->init_bps_support();
+    
+    LMA_Support nmas(marksv, bpr_marked_only_v);
     assert(nmas.LMA(13) == 9); // Checked manually
     test_all_queries(bpr,marks);
 }
@@ -106,7 +142,15 @@ void LMA_testcase2(){
         marks[i] = marks_string[i] == '1' ? 1 : 0;
     }
     
-    LMA_Support nmas(bpr,marks);
+    shared_ptr<Basic_bitvector> marksv = make_shared<Basic_bitvector>(marks);
+    marksv->init_rank_support();
+    marksv->init_select_support();
+    
+    sdsl::bit_vector bpr_marked_only = get_bpr_marked_only(bpr, marks);
+    shared_ptr<Basic_bitvector> bpr_marked_only_v = make_shared<Basic_bitvector>(bpr_marked_only);
+    bpr_marked_only_v->init_bps_support();
+    
+    LMA_Support nmas(marksv, bpr_marked_only_v);
     test_all_queries(bpr,marks);
 
 }

@@ -65,7 +65,7 @@ vector<bool> counters_to_bpr(vector<int64_t>& counters_open, vector<int64_t>& co
     return bpr;
 }
 
-sdsl::bit_vector get_slt_topology(BD_BWT_index<>& index, Iterator& iterator){
+sdsl::bit_vector get_slt_topology(BIBWT& index, Iterator& iterator){
     
     vector<int64_t> counters_open(index.size());
     vector<int64_t> counters_close(index.size());
@@ -83,7 +83,7 @@ sdsl::bit_vector get_slt_topology(BD_BWT_index<>& index, Iterator& iterator){
     return topology_sdsl;
 }
 
-sdsl::bit_vector get_slt_topology(BD_BWT_index<>& index){
+sdsl::bit_vector get_slt_topology(BIBWT& index){
     
     SLT_Iterator iterator(&index);
     return get_slt_topology(index, iterator);
@@ -132,7 +132,7 @@ void fill_in_counters(vector<int64_t>& counters_open, vector<int64_t>& counters_
     
 }
 
-Rev_st_topology get_rev_st_bpr_and_pruning(BWT& index, Iterator& iterator){
+Rev_st_topology get_rev_st_bpr_and_pruning(BIBWT& index, Iterator& iterator){
     int64_t n = index.size(); // index.size()?
     vector<int64_t> counters_open(n,0);
     vector<int64_t> counters_close(n,0);
@@ -171,13 +171,13 @@ Rev_st_topology get_rev_st_bpr_and_pruning(BWT& index, Iterator& iterator){
     return {bpr_sdsl, pruning_marks};
 }
 
-sdsl::bit_vector get_rev_st_topology(BD_BWT_index<>& index){
+sdsl::bit_vector get_rev_st_topology(BIBWT& index){
     Rev_ST_Iterator iterator(&index);
     return get_rev_st_bpr_and_pruning(index, iterator).bpr;
 }
 
 template <typename topology_mapper_t>
-sdsl::bit_vector get_rev_st_maximal_marks(BD_BWT_index<>& index, int64_t rev_st_bpr_length, Iterator& it, topology_mapper_t& mapper){
+sdsl::bit_vector get_rev_st_maximal_marks(BIBWT& index, int64_t rev_st_bpr_length, Iterator& it, topology_mapper_t& mapper){
     sdsl::bit_vector marks(rev_st_bpr_length,0);
     it.init();
     while(it.next()){
@@ -190,12 +190,12 @@ sdsl::bit_vector get_rev_st_maximal_marks(BD_BWT_index<>& index, int64_t rev_st_
 }
 
 template <typename topology_mapper_t>
-sdsl::bit_vector get_rev_st_maximal_marks(BD_BWT_index<>& index, int64_t rev_st_bpr_length, topology_mapper_t& mapper){
+sdsl::bit_vector get_rev_st_maximal_marks(BIBWT& index, int64_t rev_st_bpr_length, topology_mapper_t& mapper){
     Rev_ST_Iterator iterator(&index);
     return get_rev_st_maximal_marks(index, rev_st_bpr_length, iterator, mapper);
 }
 
-sdsl::bit_vector get_slt_maximal_marks(BD_BWT_index<>& index, sdsl::bit_vector& slt_bpr, Iterator& it){
+sdsl::bit_vector get_slt_maximal_marks(BIBWT& index, sdsl::bit_vector& slt_bpr, Iterator& it){
     sdsl::bit_vector marks(slt_bpr.size(),0);
     
     sdsl::select_support_mcl<1> slt_bpr_ss;
@@ -215,7 +215,7 @@ sdsl::bit_vector get_slt_maximal_marks(BD_BWT_index<>& index, sdsl::bit_vector& 
     return marks;
 }
 
-sdsl::bit_vector get_slt_maximal_marks(BD_BWT_index<>& index, sdsl::bit_vector& slt_bpr){
+sdsl::bit_vector get_slt_maximal_marks(BIBWT& index, sdsl::bit_vector& slt_bpr){
     SLT_Iterator iterator(&index);
     return get_slt_maximal_marks(index,slt_bpr,iterator);
 }
@@ -227,7 +227,7 @@ sdsl::bit_vector get_slt_maximal_marks(BD_BWT_index<>& index, sdsl::bit_vector& 
 // SLT iterator need to be left-to-right depth first order
 template <typename topology_mapper_t>
 std::pair<sdsl::bit_vector,sdsl::bit_vector> get_rev_st_and_slt_maximal_marks(
-                                                    BD_BWT_index<>& index,
+                                                    BIBWT& index,
                                                     int64_t rev_st_bpr_length,
                                                     Iterator& it,
                                                     topology_mapper_t& mapper,
@@ -257,7 +257,7 @@ std::pair<sdsl::bit_vector,sdsl::bit_vector> get_rev_st_and_slt_maximal_marks(
 // Returns pair rev_st_marks, slt_marks
 template <typename topology_mapper_t>
 std::pair<sdsl::bit_vector,sdsl::bit_vector> get_rev_st_and_slt_maximal_marks(
-                                                    BD_BWT_index<>& index,
+                                                    BIBWT& index,
                                                     int64_t rev_st_bpr_length,
                                                     topology_mapper_t& mapper,
                                                     sdsl::bit_vector& slt_bpr){
