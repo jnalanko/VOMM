@@ -88,7 +88,7 @@ Scores a string given a previously built model with build_model_optimized.
 
 Example:
 
-./score_string_optimized --query-raw queries.txt --dir models --file 7tm_1 --escapeprob 0.05
+./score_string_optimized --query-raw queries.txt --dir models --file data.txt --escapeprob 0.05
 
 Full list of flags:
 
