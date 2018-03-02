@@ -23,7 +23,7 @@
  */
 
 template<class t_bitvector = sdsl::bit_vector>
-class BD_BWT_index : public BWT{
+class BD_BWT_index : public BIBWT{
     
 public:
     
@@ -153,6 +153,7 @@ public:
     Interval_pair right_extend(Interval_pair I, const Interval_Data& data, uint8_t c); // TODO;
     
     void save_to_disk(std::string directory, std::string filename_prefix);
+    void save_to_disk_reverse_only(std::string directory, std::string filename_prefix);
     void load_from_disk(std::string directory, std::string filename_prefix);
 
 };
@@ -389,10 +390,10 @@ BD_BWT_index<t_bitvector>::BD_BWT_index(const uint8_t* input)
     forward[n] = END;
     backward[n] = END;
 
-    uint8_t* forward_transform = bwt_dbwt(forward,n,END);
+    uint8_t* forward_transform = build_bwt(forward,n,END);
     free(forward);
         
-    uint8_t* backward_transform = bwt_dbwt(backward,n,END);
+    uint8_t* backward_transform = build_bwt(backward,n,END);
     free(backward);
     
     // Build wavelet trees
@@ -414,6 +415,35 @@ void BD_BWT_index<t_bitvector>::save_to_disk(std::string directory, std::string 
     if(!sdsl::store_to_file(forward_bwt, fbwt)) {
         throw std::runtime_error("Error writing to disk: " + fbwt);
     }
+    
+    std::string rbwt = directory + "/" + filename_prefix + "_reverse_bwt.dat";
+    if(!sdsl::store_to_file(reverse_bwt, rbwt)) {
+        throw std::runtime_error("Error writing to disk: " + rbwt);
+    }
+    
+    // Copy to sdsl bit vector because they have serialization built in
+    sdsl::int_vector<64> global_c_array_sdsl(global_c_array.size());
+    for(int64_t i = 0; i < global_c_array.size(); i++){
+        global_c_array_sdsl[i] = global_c_array[i];
+    }
+    std::string gca = directory + "/" + filename_prefix + "_gca.dat";
+    if(!sdsl::store_to_file(global_c_array_sdsl, gca)) {
+        throw std::runtime_error("Error writing to disk: " + gca);
+    }
+        
+    // Copy to sdsl bit vector because they have serialization built in
+    sdsl::int_vector<8> alphabet_sdsl(alphabet.size());
+    for(int64_t i = 0; i < alphabet.size(); i++){
+        alphabet_sdsl[i] = alphabet[i];
+    }
+    std::string A = directory + "/" + filename_prefix + "_alphabet.dat";
+    if(!sdsl::store_to_file(alphabet_sdsl, A)) {
+        throw std::runtime_error("Error writing to disk: " + A);
+    }
+}
+
+template<class t_bitvector>
+void BD_BWT_index<t_bitvector>::save_to_disk_reverse_only(std::string directory, std::string filename_prefix){
     
     std::string rbwt = directory + "/" + filename_prefix + "_reverse_bwt.dat";
     if(!sdsl::store_to_file(reverse_bwt, rbwt)) {

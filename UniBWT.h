@@ -186,7 +186,7 @@ Basic_BWT<t_bitvector>::Basic_BWT(const uint8_t* input)
     }
     data[n] = END;
     
-    uint8_t* data_bwt = bwt_dbwt(data,n,END);
+    uint8_t* data_bwt = build_bwt(data,n,END);
     free(data);
     
     // Build wavelet trees

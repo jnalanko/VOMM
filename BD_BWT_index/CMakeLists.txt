@@ -7,7 +7,7 @@ project(BD_BWT_index)
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/lib)
 
-file(GLOB LIBRARY_SOURCES dbwt/*.c src/bwt.cpp src/io_tools.cpp)
+file(GLOB LIBRARY_SOURCES dbwt/*.c src/io_tools.cpp)
 file(GLOB TEST_SOURCES src/main.cpp)
 #file(GLOB SOURCES src/*.cpp dbwt/*.c)
 

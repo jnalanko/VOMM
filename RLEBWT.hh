@@ -136,7 +136,7 @@ RLEBWT<t_bitvector>::RLEBWT(const uint8_t* input)
     uint8_t* input_copy = (uint8_t*)malloc(sizeof(uint8_t) * (n+1)); // Can't use input directly because it's a const
     for(int64_t i = 0; i < n+1; i++) input_copy[i] = input[i];
     
-    uint8_t* data_bwt = bwt_dbwt(input_copy,n,END); // bwt_dbwt reallocs to size n+2, reads first n and appends an END and a null
+    uint8_t* data_bwt = build_bwt(input_copy,n,END); // bwt_dbwt reallocs to size n+2, reads first n and appends an END and a null
     std::string cppstring((char*)data_bwt); // For rle_string
     
     // Run length compression

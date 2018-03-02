@@ -176,7 +176,7 @@ int main(int argc, char** argv){
             double threshold = stod(argv[i]);
             C.cf = new pnorm_Formula(p, threshold);
             C.context_type = Build_Time_Config::PNORM;
-        } else if(argv[i] == string("--frequencies")){
+        } else if(argv[i] == string("--four-thresholds")){
             double t1,t2,t3,t4;
             i++; t1 = stod(argv[i]);
             i++; t2 = stod(argv[i]);
