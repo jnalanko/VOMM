@@ -6,6 +6,7 @@
 #include "context_marking_tests.hh"
 #include "score_string_tests.hh"
 #include "Topology_tests.hh"
+#include "logging.hh"
 
 #include <iostream>
 
@@ -15,9 +16,11 @@ int main(int argc, char** argv){
         
     (void) argc; (void) argv; // Silence unused variable compiler warning
 
-    score_string_tests();
-    test_serialization();
-    test_RLE();
+    disable_logging();
+    
+    test_recursive_scoring();
+    score_string_tests();    
+    
     test_mark_contexts_entropy_all();
     test_mark_contexts_p_norm_all();
     test_mark_contexts_KL_all();
@@ -26,9 +29,11 @@ int main(int argc, char** argv){
     test_rev_st_bpr_building();
     test_maxrep_rev_st_bpr_building();
     test_maxrep_depth_bounded_rev_st_bpr_building();
+    Maxreps_tests();
+    test_serialization();
+    test_RLE();
     LMA_Support_Tests();
     String_Depth_Support_tests();
-    Maxreps_tests();
     MS_Enumerator_tests();
     Parent_Support_Tests();
 

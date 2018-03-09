@@ -57,11 +57,12 @@ public:
     string modeldir;
     string filename;
     bool run_length_coding;
+    bool recursive_fallback;
     
     Scoring_Function* scorer;
     Loop_Invariant_Updater* updater;
     
-    Scoring_Config() : only_maxreps(false), context_type(UNDEFINED), escapeprob(-1), run_length_coding(false), scorer(nullptr), updater(nullptr) {}
+    Scoring_Config() : only_maxreps(false), context_type(UNDEFINED), escapeprob(-1), run_length_coding(false), recursive_fallback(false), scorer(nullptr), updater(nullptr) {}
     
     ~Scoring_Config(){
         delete scorer;
@@ -130,8 +131,9 @@ int main(int argc, char** argv){
         } else if(argv[i] == string("--escapeprob")){
             i++;
             C.escapeprob = stod(argv[i]);
-        }
-        else{
+        } else if(argv[i] == string("--recursive-fallback")){
+            C.recursive_fallback = true;
+        } else{
             cerr << "Invalid argument: " << argv[i] << endl;
             return -1;
         }
@@ -139,13 +141,10 @@ int main(int argc, char** argv){
     
     C.load_info_file();
     
-    if(C.context_type == Scoring_Config::ENTROPY){
-        // Type W
-        C.scorer = new Basic_Scorer(C.escapeprob, true);
-    }
-    if(C.context_type != Scoring_Config::ENTROPY){
-        // Type aW
-        C.scorer = new Basic_Scorer(C.escapeprob, false);
+    if(C.recursive_fallback){
+        C.scorer = new Recursive_Scorer(C.escapeprob, (C.context_type == Scoring_Config::ENTROPY));
+    } else{
+        C.scorer = new Basic_Scorer(C.escapeprob, (C.context_type == Scoring_Config::ENTROPY));
     }
     
     if(C.only_maxreps){

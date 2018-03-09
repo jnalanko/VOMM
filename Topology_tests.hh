@@ -106,7 +106,18 @@ void test_maxrep_depth_bounded_rev_st_bpr_building(){
             }
         }
         
-        sdsl::bit_vector bpr_brute = to_sdsl(ST_to_bpr(ST_maxreps));        
+        sdsl::bit_vector bpr_brute = to_sdsl(ST_to_bpr(ST_maxreps));
+        
+        /*
+        ofstream full("aaa/full.dot");
+        full << ST_to_dot(get_suffix_tree(S_rev + '$'), maxreps) << endl;
+        ofstream dot("aaa/right.dot");
+        dot << ST_to_dot(ST_maxreps, maxreps) << endl;
+        ofstream bprwrong("aaa/wrong.bpr");
+        bprwrong << rev_st_bpr << endl;
+        cout << "todo: remember to delete file writes" << endl;
+        //cout << "right: " << bpr_brute << endl;
+        //cout << "wrong: " << rev_st_bpr << endl; */
         assert(rev_st_bpr == bpr_brute);
     }
     cout << "Rev ST depth bounded maxrep left extension topology building OK" << endl;

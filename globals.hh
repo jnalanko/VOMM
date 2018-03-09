@@ -46,13 +46,13 @@ class Global_Data {
 
     std::string toString() {
         std::stringstream ss;
-        ss << "slt_bpr: " << *slt_bpr << std::endl
-        << "rev_st_bpr: " << *rev_st_bpr << std::endl
-        << "rev_st_bpr_context_only: " << *rev_st_bpr_context_only << std::endl
-        << "rev_st_maximal_marks: " << *rev_st_maximal_marks << std::endl
-        << "slt_maximal_marks: " << *slt_maximal_marks << std::endl
-        << "rev_st_context_marks: " << *rev_st_context_marks << std::endl
-        << "pruning_marks: " << *pruning_marks << std::endl;
+        ss << "slt_bpr: " << slt_bpr->toString() << std::endl
+        << "rev_st_bpr: " << rev_st_bpr->toString() << std::endl
+        << "rev_st_bpr_context_only: " << rev_st_bpr_context_only->toString() << std::endl
+        << "rev_st_maximal_marks: " << rev_st_maximal_marks->toString() << std::endl
+        << "slt_maximal_marks: " << slt_maximal_marks->toString() << std::endl
+        << "rev_st_context_marks: " << rev_st_context_marks->toString() << std::endl
+        << "pruning_marks: " << pruning_marks->toString() << std::endl;
         return ss.str();
     }
 

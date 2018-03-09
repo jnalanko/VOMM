@@ -137,7 +137,7 @@ vector<bool> ST_to_bpr(vector<Edge> edges){
     return bpr;
 }
 
-string ST_to_dot(vector<Edge>& edges, set<string> maxreps){
+string ST_to_dot(const vector<Edge>& edges, set<string> maxreps){
     stringstream dot;
     dot << "digraph suffixtree {\n";
     set<string> nodes;
@@ -147,7 +147,7 @@ string ST_to_dot(vector<Edge>& edges, set<string> maxreps){
     }
     map<string, int64_t> node_to_id;
     int64_t counter = 0;
-    int64_t leaf_count;
+    int64_t leaf_count = 0;
     for(string node : nodes){
         node_to_id[node] = counter;
         if(node.size() > 0 && node.back() == '$'){

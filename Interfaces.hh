@@ -51,10 +51,11 @@ public:
     virtual void serialize(std::string path) = 0;
     virtual void load(std::string path) = 0;
     
+    virtual std::string toString() = 0;
+    
     virtual ~Bitvector() {} // https://stackoverflow.com/questions/8764353/what-does-has-virtual-method-but-non-virtual-destructor-warning-mean-durin
 };
 
-std::ostream& operator<<(std::ostream& os, const Bitvector& dt);
 
 class BWT{
 public:
@@ -68,6 +69,11 @@ public:
         
         // ranks_start[i] = number of symbols smaller than the i-th symbol up to the end of the interval
         std::vector<uint64_t> ranks_end;
+        
+        int64_t count(int64_t symbol_index){
+            return ranks_end[symbol_index] - ranks_start[symbol_index];
+        }
+        
     };
     
     virtual uint8_t get_END() const = 0;
@@ -97,38 +103,27 @@ public:
         
         // ranks_start[i] = number of symbols smaller than the i-th symbol up to the end of the interval
         std::vector<uint64_t> ranks_end;
+        
+        int64_t count(int64_t symbol_index){
+            return ranks_end[symbol_index] - ranks_start[symbol_index];
+        }
+        
     };
     
     virtual uint8_t get_END() const = 0;
     virtual int64_t size() const = 0;
     virtual const std::vector<int64_t>& get_global_c_array() const = 0;
     virtual const std::vector<uint8_t>& get_alphabet() const = 0;
-    virtual void compute_local_c_array_forward(Interval& interval, std::vector<int64_t>& c_array) = 0;
-    virtual void compute_local_c_array_reverse(Interval& interval, std::vector<int64_t>& c_array) = 0;
-    virtual Interval_pair left_extend(Interval_pair intervals, uint8_t c) = 0;
-    virtual Interval_pair left_extend(Interval_pair intervals, uint8_t c, const std::vector<int64_t>& local_c_array) = 0;
-    virtual Interval_pair right_extend(Interval_pair intervals, uint8_t c) = 0;
-    virtual Interval_pair right_extend(Interval_pair intervals, uint8_t c, const std::vector<int64_t>& local_c_array) = 0;
-    virtual int64_t backward_step(int64_t lex_rank) const = 0;
-    virtual int64_t forward_step(int64_t colex_rank) const = 0;
     virtual bool is_right_maximal(Interval_pair I) = 0;
     virtual bool is_left_maximal(Interval_pair I) = 0;
-    virtual void compute_bwt_interval_data(Interval I, Interval_Data& data) = 0;
-    virtual void compute_rev_bwt_interval_data(Interval I, Interval_Data& data) = 0;
+    virtual void compute_bwt_interval_data(Interval I, Interval_Data& data) = 0; // data.symbols MUST BE lex-ordered!
+    virtual void compute_rev_bwt_interval_data(Interval I, Interval_Data& data) = 0; // data.symbols MUST BE lex-ordered!
     virtual Interval_pair left_extend(Interval_pair intervals, Interval_Data& data, int64_t symbol_index) = 0;
-    //Interval_pair right_extend(Interval_pair I, const Interval_Data& data, uint8_t c); // TODO;
+    virtual Interval_pair right_extend(Interval_pair intervals, Interval_Data& data, int64_t symbol_index) = 0;
     virtual void save_to_disk_reverse_only(std::string directory, std::string filename_prefix) = 0;
     //virtual void load_from_disk(std::string directory, std::string filename_prefix) = 0;
     
     virtual ~BIBWT() {} // https://stackoverflow.com/questions/8764353/what-does-has-virtual-method-but-non-virtual-destructor-warning-mean-durin
-
-};
-
-class Scoring_Function{
-public:  
-    virtual double score(Interval I, int64_t d, char c, Topology& topology, BWT& index) = 0;
-    
-    virtual ~Scoring_Function() {} // https://stackoverflow.com/questions/8764353/what-does-has-virtual-method-but-non-virtual-destructor-warning-mean-durin
 
 };
 
@@ -138,6 +133,14 @@ public:
     virtual std::pair<Interval, int64_t> update(Interval I, int64_t d, char c, Global_Data& data, Topology& topology, BWT& index) = 0;
     
     virtual ~Loop_Invariant_Updater() {} // https://stackoverflow.com/questions/8764353/what-does-has-virtual-method-but-non-virtual-destructor-warning-mean-durin
+
+};
+
+class Scoring_Function{
+public:  
+    virtual double score(Interval I, int64_t d, char c, Topology& topology, BWT& index, Global_Data& G) = 0;
+    
+    virtual ~Scoring_Function() {} // https://stackoverflow.com/questions/8764353/what-does-has-virtual-method-but-non-virtual-destructor-warning-mean-durin
 
 };
 
@@ -165,7 +168,8 @@ public:
     public:
         Interval_pair intervals;  // forward interval, reverse interval
         int64_t depth; // depth in the tree
-        Stack_frame(Interval_pair intervals, int64_t depth) : intervals(intervals), depth(depth) {}
+        bool is_maxrep;
+        Stack_frame(Interval_pair intervals, int64_t depth, bool is_maxrep) : intervals(intervals), depth(depth), is_maxrep(is_maxrep) {}
         Stack_frame(){}
     };
     
@@ -177,6 +181,32 @@ public:
     virtual ~Iterator() {} // https://stackoverflow.com/questions/8764353/what-does-has-virtual-method-but-non-virtual-destructor-warning-mean-durin
 };
 
+class Iterator_Callback{
+public:
+    virtual void callback(const Iterator::Stack_frame& top) = 0;
+    virtual void finish() = 0;
+    virtual ~Iterator_Callback() {} // https://stackoverflow.com/questions/8764353/what-does-has-virtual-method-but-non-virtual-destructor-warning-mean-durin
+
+};
+
+class Context_Callback : public Iterator_Callback{
+public:
+    virtual void init(BIBWT* index, int64_t rev_st_bpr_size, Topology_Mapper& mapper) = 0;
+    virtual sdsl::bit_vector get_result() = 0;
+    virtual ~Context_Callback() {} // https://stackoverflow.com/questions/8764353/what-does-has-virtual-method-but-non-virtual-destructor-warning-mean-durin
+
+};
+
+class Counters{
+public:  
+    virtual void init(int64_t size) = 0;
+    virtual void increment(int64_t pos) = 0;
+    virtual int64_t get(int64_t pos) = 0;
+    virtual int64_t size() = 0;
+    
+};
+
+/*
 class Context_Formula{
     
 public:
@@ -184,7 +214,7 @@ public:
 
     virtual ~Context_Formula() {} // https://stackoverflow.com/questions/8764353/what-does-has-virtual-method-but-non-virtual-destructor-warning-mean-durin
 
-};
+}; */
 
 
 

@@ -19,7 +19,7 @@ sdsl::bit_vector get_bpr_marked_only(sdsl::bit_vector& bpr, sdsl::bit_vector& ma
     // Build bpr for marked only
     
     int64_t nMarked = 0;
-    for(int i = 0; i < marks.size(); i++) nMarked += marks[i];
+    for(int64_t i = 0; i < marks.size(); i++) nMarked += marks[i];
     
     sdsl::bit_vector bpr_marked_only(nMarked);
     int64_t k = 0;

@@ -19,7 +19,7 @@ public:
     RLE_bitvector() : have_bps(false), have_ss_10(false), have_rs_10(false), have_rs(false), have_ss(false) {}
     RLE_bitvector(const sdsl::bit_vector& B) : have_bps(false), have_ss_10(false), have_rs_10(false), have_rs(true), have_ss(true) {
         string S;
-        for(int i = 0; i < B.size(); i++){
+        for(int64_t i = 0; i < B.size(); i++){
             if(B[i] == 0) S += '0';
             else S += '1';
         }
@@ -133,6 +133,21 @@ public:
     virtual void init_bps_support(){
         throw(std::runtime_error("BPS not implemented for run length coded bit vector"));
     }
+    
+    virtual std::string toString(){
+        string S;
+        for(int64_t i = 0; i < bv.size(); i++){
+            S += bv[i]; // bv has characters '0' and '1'
+        }
+        return S;
+    }
 };
+
+std::ostream& operator<<(std::ostream& os, RLE_bitvector& B){
+    for(int64_t i = 0; i < B.bv.size(); i++){
+        os << B.bv[i];
+    }
+    return os;
+}
 
 #endif

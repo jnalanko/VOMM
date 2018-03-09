@@ -37,8 +37,7 @@ void test_mark_contexts_entropy(string text, double threshold){
     
     Full_Topology_Mapper mapper(rev_st_bpr);
     SLT_Iterator iterator(&index);
-    Entropy_Formula F(threshold);
-    sdsl::bit_vector contexts = F.get_rev_st_context_marks(&index, rev_st_bpr->size(), iterator, mapper);
+    sdsl::bit_vector contexts = mark_contexts_entropy(index, rev_st_bpr_sdsl.size(), threshold, mapper);
 
     // Find substrings corresponding to contexts: the substring is the LCP of the first and last leaf of the node interval
     string text_rev(text.rbegin(), text.rend());
@@ -77,8 +76,7 @@ void test_mark_contexts_formulas_234(string text, double tau1, double tau2, doub
     
     SLT_Iterator iterator(&index);
     Full_Topology_Mapper mapper(rev_st_bpr);
-    EQ234_Formula F(tau1,tau2,tau3,tau4);
-    sdsl::bit_vector contexts = F.get_rev_st_context_marks(&index, rev_st_bpr_sdsl.size(), iterator, mapper);
+    sdsl::bit_vector contexts = mark_contexts_formulas234(index, rev_st_bpr_sdsl.size(), tau1,tau2,tau3,tau4, mapper);
     
     vector<string> context_strings;
     for(int64_t i = 0; i < contexts.size(); i++){
@@ -109,8 +107,7 @@ void test_mark_contexts_KL(string text, double threshold){
     
     SLT_Iterator iterator(&index);
     Full_Topology_Mapper mapper(rev_st_bpr);
-    KL_Formula F(threshold);
-    sdsl::bit_vector contexts = F.get_rev_st_context_marks(&index, rev_st_bpr_sdsl.size(), iterator, mapper);
+    sdsl::bit_vector contexts = mark_contexts_KL(index, rev_st_bpr_sdsl.size(), threshold, mapper);
     
     vector<string> context_strings;
     for(int64_t i = 0; i < contexts.size(); i++){
@@ -141,8 +138,7 @@ void test_mark_contexts_p_norm(string text, double p, double threshold){
     
     SLT_Iterator iterator(&index);
     Full_Topology_Mapper mapper(rev_st_bpr);
-    pnorm_Formula F(p,threshold);
-    sdsl::bit_vector contexts = F.get_rev_st_context_marks(&index, rev_st_bpr_sdsl.size(), iterator, mapper);
+    sdsl::bit_vector contexts = mark_contexts_p_norm(index, rev_st_bpr_sdsl.size(), p, threshold, mapper);
     
     vector<string> context_strings;
     for(int64_t i = 0; i < contexts.size(); i++){

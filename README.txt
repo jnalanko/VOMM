@@ -107,6 +107,9 @@ Full list of flags:
 
 --escapeprob [float prob]
     Escape probability used in scoring.
+
+--recursive-fallback
+    Enables recusive fallback in scoring
     
 If there is a problem with some of the flags maybe I updated the flags but forgot
 to update this documentation, or maybe I typoed something. In this case please check

@@ -106,7 +106,7 @@ std::vector<uint8_t> RLEBWT<t_bitvector>::get_string_alphabet(const uint8_t* s) 
     }
     
     std::vector<uint8_t> alphabet;
-    for(int i = 0; i < 256; i++){
+    for(int64_t i = 0; i < 256; i++){
         if(found[i]) alphabet.push_back((uint8_t)i);
     }
     

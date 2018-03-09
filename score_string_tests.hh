@@ -3,6 +3,7 @@
 
 #include "score_string.hh"
 #include "BWT_iteration.hh"
+#include "build_model.hh"
 #include <vector>
 #include <string>
 #include <set>
@@ -24,18 +25,27 @@ double get_emission_prob(string T, string W, char c){
     return matching / total;
 }
 
-double score_string_brute_given_contexts(string S, string T, set<string> contexts, double escape_prob){
+double score_string_brute_given_contexts_recursive(string S, string T, set<string> contexts, double escape_prob, int64_t depth_bound = 1e18){
     double score = 0;
-    //cout << S << endl;
-    //cout << T << endl;
     for(int64_t i = 0; i < S.size(); i++){
         // Try candidate contexts in decreasing order of length
         for(int64_t context_start = 0; context_start <= i; context_start++){
             string W = S.substr(context_start, i-context_start);
+            if(W.size() > depth_bound) continue;
             if(contexts.find(W) != contexts.end()){
+                // W is the longest context that is a suffix of W
                 double prob = get_emission_prob(T,W,S[i]);
+                int64_t failures = 0;
+                while((contexts.find(W) == contexts.end()) || (W.size() != 0 && prob == 0)){
+                    // Shorten W
+                    failures++;
+                    W = S.substr(context_start+failures, i-(context_start+failures));
+                    prob = get_emission_prob(T,W,S[i]);
+                    score += log2(escape_prob);
+                }
+                
                 if(prob != 0) {
-                    score += log2(get_emission_prob(T,W,S[i]));
+                    score += log2(prob) + log2(1-escape_prob);
                 }
                 else{
                     score += log2(escape_prob);
@@ -48,7 +58,7 @@ double score_string_brute_given_contexts(string S, string T, set<string> context
     return score;   
 }
 
-double score_string_brute_depth_bounded_given_contexts(string S, string T, set<string> contexts, double escape_prob, int64_t depth_bound){
+double score_string_brute_given_contexts(string S, string T, set<string> contexts, double escape_prob, int64_t depth_bound = 1e18){
     double score = 0;
     for(int64_t i = 0; i < S.size(); i++){
         // Try candidate contexts in decreasing order of length
@@ -97,35 +107,27 @@ double score_string_p_norm_brute(string S, string T,  double p, double threshold
 
 double score_string_entropy_non_brute(string S, string T, bool maxreps_only, double threshold, double escape_prob){
     if(maxreps_only){
-        typedef SLT_Iterator slt_iterator_t;
-        typedef Rev_ST_Maxrep_Iterator rev_slt_iterator_t;
-        typedef Basic_Scorer scorer_t;
-        typedef Maxrep_Pruned_Updater updater_t ;
         
-        slt_iterator_t slt_it;
-        rev_slt_iterator_t rev_slt_it;
+        SLT_Iterator slt_it;
+        Rev_ST_Depth_Bounded_Maxrep_Iterator rev_slt_it(1e18);
         
         Entropy_Formula formula(threshold);
         Global_Data G; 
-        build_model(G, T, formula, slt_it, rev_slt_it, slt_it, true, false);
-        scorer_t scorer(escape_prob, true);
-        updater_t updater;
+        build_model(G, T, formula, slt_it, rev_slt_it, true, false);
+        //cout << G.toString() << endl; exit(0);
+        Basic_Scorer scorer(escape_prob, true);
+        Maxrep_Pruned_Updater updater;
         return score_string(S, G, scorer, updater);
     }
     
     else{
-        typedef SLT_Iterator slt_iterator_t;
-        typedef Rev_ST_Iterator rev_slt_iterator_t;
-        typedef Basic_Scorer scorer_t;
-        typedef Basic_Updater updater_t;
-        
-        slt_iterator_t slt_it;
-        rev_slt_iterator_t rev_slt_it;
+        SLT_Iterator slt_it;
+        Rev_ST_Iterator rev_slt_it;
         Entropy_Formula formula(threshold);
         Global_Data G;
-        build_model(G, T, formula, slt_it, rev_slt_it, slt_it, true, false);
-        scorer_t scorer(escape_prob, true);
-        updater_t updater;
+        build_model(G, T, formula, slt_it, rev_slt_it, true, false);
+        Basic_Scorer scorer(escape_prob, true);
+        Basic_Updater updater;
         return score_string(S, G, scorer, updater);    
     }
     
@@ -139,8 +141,8 @@ void test_entropy(string S, string T, double threshold, double escape){
     //Rev_ST_Maxrep_Iterator<BD_BWT_index<> > rev_slt_it_mr;
 
     double brute = score_string_entropy_brute(S,T,threshold,escape);
-    double non_brute_1 = score_string_entropy_non_brute(S,T,false,threshold,escape);
     double non_brute_2 = score_string_entropy_non_brute(S,T,true,threshold,escape);
+    double non_brute_1 = score_string_entropy_non_brute(S,T,false,threshold,escape);
     assert(fabs(brute-non_brute_1) < 1e-6);
     assert(fabs(brute-non_brute_2) < 1e-6);
 }
@@ -158,7 +160,7 @@ void test_serialization(){
     Rev_ST_Maxrep_Iterator rev_slt_it;
     Entropy_Formula formula(threshold);
     Global_Data G1;
-    build_model(G1, T, formula, slt_it, rev_slt_it, slt_it, true, false);
+    build_model(G1, T, formula, slt_it, rev_slt_it, true, false);
     G1.store_all_to_disk("models","test");
     Global_Data G2;
     G2.load_all_from_disk("models","test",true);
@@ -181,13 +183,56 @@ void test_RLE(){
     Rev_ST_Maxrep_Iterator rev_slt_it;
     Entropy_Formula formula(threshold);
     Global_Data G_RLE;
-    build_model(G_RLE, T, formula, slt_it, rev_slt_it, slt_it, true, false);
+    build_model(G_RLE, T, formula, slt_it, rev_slt_it, true, false);
     Global_Data G_non_RLE;
-    build_model(G_non_RLE, T, formula, slt_it, rev_slt_it, slt_it, false, false);
+    build_model(G_non_RLE, T, formula, slt_it, rev_slt_it, false, false);
     
     Basic_Scorer scorer(escape_prob, true);
     Maxrep_Pruned_Updater updater;
     assert(score_string(S, G_RLE, scorer, updater) == score_string(S, G_non_RLE, scorer, updater));
+}
+
+void test_recursive_scoring(){
+    cerr << "Testing recursive scoring" << endl;
+    srand(1337);
+    for(int64_t i = 0; i < 50; i++){
+        string S = get_random_string(200,3);
+        string T = get_random_string(200,3);
+        double threshold = rand() / (double)RAND_MAX;
+        double escape = rand() / (double)RAND_MAX;
+        
+        SLT_Iterator slt_it;
+        Rev_ST_Maxrep_Iterator rev_st_it;        
+        // Test aW contexts
+        {
+            vector<string> contexts_vec = get_contexts_KL_brute(T, threshold);
+            set<string> contexts(contexts_vec.begin(), contexts_vec.end());
+            double brute = score_string_brute_given_contexts_recursive(S,T,contexts,escape);
+
+            KL_Formula formula(threshold);
+            Global_Data G;
+            build_model(G, T, formula, slt_it, rev_st_it, false, false);
+            Recursive_Scorer scorer(escape, false);
+            Maxrep_Pruned_Updater updater;
+            double nonbrute = score_string(S, G, scorer, updater);
+            assert(abs(nonbrute - brute) < 1e-6);
+        }
+        
+        // Test W contexts
+        {
+            vector<string> contexts_vec = get_contexts_entropy_brute(T, threshold);
+            set<string> contexts(contexts_vec.begin(), contexts_vec.end());
+            double brute = score_string_brute_given_contexts_recursive(S,T,contexts,escape);
+
+            Entropy_Formula formula(threshold);
+            Global_Data G;
+            build_model(G, T, formula, slt_it, rev_st_it, false, false);
+            Recursive_Scorer scorer(escape, true);
+            Maxrep_Pruned_Updater updater;
+            double nonbrute = score_string(S, G, scorer, updater);
+            assert(abs(nonbrute - brute) < 1e-6);
+        }
+    }
 }
 
 void score_string_random_tests(int64_t number){
@@ -209,19 +254,15 @@ void score_string_random_tests(int64_t number){
             int64_t depth_bound = 3;
             vector<string> contexts_vec = get_contexts_entropy_brute(T, threshold);
             set<string> contexts(contexts_vec.begin(), contexts_vec.end());
-            double brute = score_string_brute_depth_bounded_given_contexts(S,T,contexts,escape,depth_bound);
+            double brute = score_string_brute_given_contexts(S,T,contexts,escape,depth_bound);
 
             
-            typedef Depth_Bounded_SLT_Iterator slt_it_t;
-            typedef Rev_ST_Depth_Bounded_Maxrep_Iterator rev_slt_it_t;
-            slt_it_t slt_it(depth_bound);
-            rev_slt_it_t rev_slt_it(depth_bound);
-            
-            slt_it_t context_it(depth_bound);
-            Entropy_Formula formula(threshold);
+            Depth_Bounded_SLT_Iterator slt_it(depth_bound);
+            Rev_ST_Depth_Bounded_Maxrep_Iterator rev_st_it(depth_bound);
+            Entropy_Formula formula(threshold,depth_bound);
             
             Global_Data G; 
-            build_model(G, T, formula, slt_it, rev_slt_it, context_it, true, false);
+            build_model(G, T, formula, slt_it, rev_st_it, true, false);
                                 
             Basic_Scorer scorer(escape, true);
             Maxrep_Depth_Bounded_Updater updater;
@@ -238,21 +279,14 @@ void score_string_random_tests(int64_t number){
             double escape = rand() / (double)RAND_MAX;
             vector<string> contexts_vec = get_contexts_KL_brute(T, threshold);
             set<string> contexts(contexts_vec.begin(), contexts_vec.end());
-            double brute = score_string_brute_depth_bounded_given_contexts(S,T,contexts,escape,depth_bound);
+            double brute = score_string_brute_given_contexts(S,T,contexts,escape,depth_bound);
             
-            typedef Depth_Bounded_SLT_Iterator slt_it_t;
-            typedef Rev_ST_Depth_Bounded_Maxrep_Iterator rev_slt_it_t;
-            slt_it_t slt_it(depth_bound);
-            rev_slt_it_t rev_slt_it(depth_bound);
-            
-            slt_it_t context_it(depth_bound-1); // -1 because contexts are of form aW
-            KL_Formula formula(threshold);
+            Depth_Bounded_SLT_Iterator slt_it(depth_bound);
+            Rev_ST_Depth_Bounded_Maxrep_Iterator rev_st_it(depth_bound);
+            KL_Formula formula(threshold,depth_bound);
             
             Global_Data G;
-            build_model(G, T, formula, slt_it, rev_slt_it, context_it, true, false);
-                
-            int64_t asd = 0; // debug start
-            for(string C : contexts) if(C.size() <= depth_bound) asd++;
+            build_model(G, T, formula, slt_it, rev_st_it, true, false);
                 
             Basic_Scorer scorer(escape, false);
             Maxrep_Depth_Bounded_Updater updater;
@@ -270,16 +304,13 @@ void score_string_random_tests(int64_t number){
             double escape = rand() / (double)RAND_MAX;
             double brute = score_string_eq_234_brute(S,T,t1,t2,t3,t4,escape);
 
-            typedef SLT_Iterator slt_it_t;
-            typedef Rev_ST_Maxrep_Iterator rev_slt_it_t;
             
-            slt_it_t slt_it;
-            rev_slt_it_t rev_slt_it;
+            SLT_Iterator slt_it;
+            Rev_ST_Maxrep_Iterator rev_st_it;
             EQ234_Formula formula(t1,t2,t3,t4);
-
             
             Global_Data G; 
-            build_model(G, T, formula, slt_it, rev_slt_it, slt_it, true, false);
+            build_model(G, T, formula, slt_it, rev_st_it, true, false);
 
             Basic_Scorer scorer(escape, false);
             Maxrep_Pruned_Updater updater;
@@ -297,16 +328,13 @@ void score_string_random_tests(int64_t number){
             double escape = rand() / (double)RAND_MAX;
             double brute = score_string_KL_brute(S,T,threshold,escape);
             
-            typedef SLT_Iterator slt_it_t;
-            typedef Rev_ST_Maxrep_Iterator rev_slt_it_t;
-            
-            slt_it_t slt_it;
-            rev_slt_it_t rev_slt_it;
+            SLT_Iterator slt_it;
+            Rev_ST_Maxrep_Iterator rev_st_it;
             
             KL_Formula formula(threshold);
             
             Global_Data G; 
-            build_model(G, T, formula, slt_it, rev_slt_it, slt_it, true, false);
+            build_model(G, T, formula, slt_it, rev_st_it, true, false);
 
             Basic_Scorer scorer(escape, false);
             Maxrep_Pruned_Updater updater;
@@ -323,16 +351,13 @@ void score_string_random_tests(int64_t number){
             int64_t p = 1 + (rand() % 5);
             double brute = score_string_p_norm_brute(S,T,p,threshold,escape);
             
-            typedef SLT_Iterator slt_it_t;
-            typedef Rev_ST_Maxrep_Iterator rev_slt_it_t;
-
-            slt_it_t slt_it;
-            rev_slt_it_t rev_slt_it;
+            SLT_Iterator slt_it;
+            Rev_ST_Maxrep_Iterator rev_st_it;
             
             pnorm_Formula formula(p,threshold);
             
             Global_Data G;
-            build_model(G, T, formula, slt_it, rev_slt_it, slt_it, true, false);
+            build_model(G, T, formula, slt_it, rev_st_it, true, false);
 
             Basic_Scorer scorer(escape, false);
             Maxrep_Pruned_Updater updater;

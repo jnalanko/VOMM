@@ -8,6 +8,7 @@
 #include "bwt.hh"
 #include "Interval.hh"
 #include "sdsl/io.hpp"
+#include "sdsl/wavelet_trees.hpp"
 #include "../../Interfaces.hh"
 
 
@@ -27,12 +28,10 @@ class BD_BWT_index : public BIBWT{
     
 public:
     
-
-    
 private:
         
-    sdsl::wt_huff<t_bitvector> forward_bwt;
-    sdsl::wt_huff<t_bitvector> reverse_bwt;
+    sdsl::wt_hutu<t_bitvector> forward_bwt;
+    sdsl::wt_hutu<t_bitvector> reverse_bwt;
 
     std::vector<int64_t> global_c_array;
     std::vector<uint8_t> alphabet;
@@ -45,11 +44,11 @@ private:
     
     std::vector<uint8_t> get_string_alphabet(const uint8_t* s) const;
     int64_t strlen(const uint8_t* str) const;
-    int64_t compute_cumulative_char_rank_in_interval(const sdsl::wt_huff<t_bitvector>& wt, uint8_t c, Interval I) const;
-    int64_t get_interval_symbols(const sdsl::wt_huff<t_bitvector>& wt, Interval I);
-    void get_interval_symbols(const sdsl::wt_huff<t_bitvector>& wt, Interval I, sdsl::int_vector_size_type& nExtensions, 
+    int64_t compute_cumulative_char_rank_in_interval(const sdsl::wt_hutu<t_bitvector>& wt, uint8_t c, Interval I) const;
+    int64_t get_interval_symbols(const sdsl::wt_hutu<t_bitvector>& wt, Interval I);
+    void get_interval_symbols(const sdsl::wt_hutu<t_bitvector>& wt, Interval I, sdsl::int_vector_size_type& nExtensions, 
                               std::vector<uint8_t>& symbols, std::vector<uint64_t>& ranks_i, std::vector<uint64_t>& ranks_j) const;
-    void count_smaller_chars(const sdsl::wt_huff<t_bitvector>& bwt, std::vector<int64_t>& counts, Interval I);
+    void count_smaller_chars(const sdsl::wt_hutu<t_bitvector>& bwt, std::vector<int64_t>& counts, Interval I);
 
 public:
 
@@ -124,21 +123,18 @@ public:
         if(intervals.forward.size() == 0)
             return Interval_pair(-1,-2,-1,-2);
         
-        //Interval forward = intervals.forward;
-        Interval reverse = intervals.reverse;
         char c = data.symbols[symbol_index];
         
         // Compute the new forward interval
-        //int64_t num_c_in_interval = forward_bwt.rank(forward.right + 1,c) - forward_bwt.rank(forward.left,c);
         int64_t num_c_in_interval = data.ranks_end[symbol_index] - data.ranks_start[symbol_index];
         
-        //int64_t start_f_new = get_global_c_array()[c] + forward_bwt.rank(forward.left, c); // Start in forward
         int64_t start_f_new = get_global_c_array()[c] + data.ranks_start[symbol_index]; // Start in forward
         int64_t end_f_new = start_f_new + num_c_in_interval - 1; // End in forward
 
         if(start_f_new > end_f_new) return Interval_pair(-1,-2,-1,-2); // num_c_in_interval == 0
         
         // Compute the new reverse interval
+        Interval reverse = intervals.reverse;
         int64_t smaller_chars = 0;
         for(int64_t i = 0; i < symbol_index; i++){
             smaller_chars += data.ranks_end[i] - data.ranks_start[i];
@@ -150,7 +146,32 @@ public:
         return Interval_pair(start_f_new,end_f_new,start_r_new,end_r_new);
     }
     
-    Interval_pair right_extend(Interval_pair I, const Interval_Data& data, uint8_t c); // TODO;
+    Interval_pair right_extend(Interval_pair intervals, Interval_Data& data, int64_t symbol_index){
+        if(intervals.reverse.size() == 0)
+            return Interval_pair(-1,-2,-1,-2);
+        
+        char c = data.symbols[symbol_index];
+        
+        // Compute the new reverse interval
+        int64_t num_c_in_interval = data.ranks_end[symbol_index] - data.ranks_start[symbol_index];
+        
+        int64_t start_r_new = get_global_c_array()[c] + data.ranks_start[symbol_index]; // Start in forward
+        int64_t end_r_new = start_r_new + num_c_in_interval - 1; // End in forward
+
+        if(start_r_new > end_r_new) return Interval_pair(-1,-2,-1,-2); // num_c_in_interval == 0
+        
+        // Compute the new forward interval
+        Interval forward = intervals.forward;
+        int64_t smaller_chars = 0;
+        for(int64_t i = 0; i < symbol_index; i++){
+            smaller_chars += data.ranks_end[i] - data.ranks_start[i];
+        }
+        
+        int64_t start_f_new = forward.left + smaller_chars;
+        int64_t end_f_new = start_f_new + (end_r_new - start_r_new); // The forward and reverse intervals must have same length
+        
+        return Interval_pair(start_f_new,end_f_new,start_r_new,end_r_new);
+    }
     
     void save_to_disk(std::string directory, std::string filename_prefix);
     void save_to_disk_reverse_only(std::string directory, std::string filename_prefix);
@@ -174,7 +195,7 @@ void BD_BWT_index<t_bitvector>::compute_local_c_array_reverse(Interval& interval
 }
 
 template<class t_bitvector>
-int64_t BD_BWT_index<t_bitvector>::compute_cumulative_char_rank_in_interval(const sdsl::wt_huff<t_bitvector>& wt, uint8_t c, Interval I) const{
+int64_t BD_BWT_index<t_bitvector>::compute_cumulative_char_rank_in_interval(const sdsl::wt_hutu<t_bitvector>& wt, uint8_t c, Interval I) const{
     int64_t ans = 0;
     if(I.size() == 0) return 0;
     
@@ -189,7 +210,7 @@ int64_t BD_BWT_index<t_bitvector>::compute_cumulative_char_rank_in_interval(cons
 
 // Returns the number of distinct symbols and stores them in this->symbols without resizising this->symbols
 template<class t_bitvector>
-int64_t BD_BWT_index<t_bitvector>::get_interval_symbols(const sdsl::wt_huff<t_bitvector>& wt, Interval I){
+int64_t BD_BWT_index<t_bitvector>::get_interval_symbols(const sdsl::wt_hutu<t_bitvector>& wt, Interval I){
     if(I.size() == 0){
         std::vector<uint8_t> empty;
         return 0;
@@ -206,7 +227,7 @@ int64_t BD_BWT_index<t_bitvector>::get_interval_symbols(const sdsl::wt_huff<t_bi
 // to ranks_i and ranks_j. Important: All the parameter vectors must have length at least equal to the size
 // of the alphabet of the given wavelet tree. Symbols is not sorted
 template<class t_bitvector>
-void BD_BWT_index<t_bitvector>::get_interval_symbols(const sdsl::wt_huff<t_bitvector>& wt, Interval I, sdsl::int_vector_size_type& nExtensions, std::vector<uint8_t>& symbols,
+void BD_BWT_index<t_bitvector>::get_interval_symbols(const sdsl::wt_hutu<t_bitvector>& wt, Interval I, sdsl::int_vector_size_type& nExtensions, std::vector<uint8_t>& symbols,
  std::vector<uint64_t>& ranks_i, std::vector<uint64_t>& ranks_j) const{
     if(I.size() == 0){
         nExtensions = 0;
@@ -297,7 +318,7 @@ Interval_pair BD_BWT_index<t_bitvector>::right_extend(Interval_pair intervals, u
 // Assumes alphabet is sorted
 
 template<class t_bitvector>
-void BD_BWT_index<t_bitvector>::count_smaller_chars(const sdsl::wt_huff<t_bitvector>& bwt, 
+void BD_BWT_index<t_bitvector>::count_smaller_chars(const sdsl::wt_hutu<t_bitvector>& bwt, 
                                                     std::vector<int64_t>& counts, Interval I){
     assert(alphabet.size() != 0);
     for(int64_t i = 0; i < (int64_t)alphabet.size(); i++) counts[alphabet[i]] = 0;

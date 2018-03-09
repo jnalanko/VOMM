@@ -172,7 +172,14 @@ public:
         sdsl::util::init_support(bps, &bv);
         have_bps = true;
     }
+    
+    virtual std::string toString(){
+        stringstream ss;
+        ss << bv;
+        return ss.str();
+    }
 };
+
 
 
 #endif

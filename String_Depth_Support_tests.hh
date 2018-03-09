@@ -15,36 +15,6 @@
 class String_Depth_Support_Tester{
     
 public:
-    
-    void test_mark_maximal_both(){
-        string input = "mississippi";
-        BD_BWT_index<> index((uint8_t*)input.c_str());
-        
-        sdsl::bit_vector rev_st_bpr_sdsl = get_rev_st_topology(index);
-        sdsl::bit_vector slt_bpr_sdsl = get_slt_topology(index);
-        
-        std::shared_ptr<Basic_bitvector> rev_st_bpr = make_shared<Basic_bitvector>(rev_st_bpr_sdsl);
-        rev_st_bpr->init_rank_10_support();
-        rev_st_bpr->init_select_10_support();
-        rev_st_bpr->init_bps_support();
-        
-        Full_Topology_Mapper mapper(rev_st_bpr);
-        
-        pair<sdsl::bit_vector,sdsl::bit_vector> marks
-        = get_rev_st_and_slt_maximal_marks(index,
-                                           rev_st_bpr->size(),
-                                           mapper,
-                                           slt_bpr_sdsl);
-        
-        sdsl::bit_vector rev_st_maximal_marks = marks.first;
-        sdsl::bit_vector slt_maximal_marks = marks.second;
-        
-        sdsl::bit_vector rev_st_correct = {1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-        sdsl::bit_vector slt_correct = {1,1,0,0,1,0,0,0,0,1,0,1,0,0};
-
-        assert(rev_st_maximal_marks == rev_st_correct);
-        assert(slt_maximal_marks == slt_correct);
-    }
         
     void test_string_depth(string input){
         
@@ -66,17 +36,12 @@ public:
         
         Full_Topology_Mapper mapper(rev_st_bpr);
         
-        pair<sdsl::bit_vector,sdsl::bit_vector> marks
-        = get_rev_st_and_slt_maximal_marks(index,
-                                           rev_st_bpr->size(),
-                                           mapper,
-                                           slt_bpr_sdsl);
         
-        sdsl::bit_vector rev_st_maximal_marks_sdsl = marks.first;
+        sdsl::bit_vector rev_st_maximal_marks_sdsl = get_rev_st_maximal_marks(index, rev_st_bpr->size(), mapper);
         std::shared_ptr<Basic_bitvector> rev_st_maximal_marks = make_shared<Basic_bitvector>(rev_st_maximal_marks_sdsl);
         rev_st_maximal_marks->init_rank_support();
         
-        sdsl::bit_vector slt_maximal_marks_sdsl = marks.second;
+        sdsl::bit_vector slt_maximal_marks_sdsl = get_slt_maximal_marks(index, slt_bpr->bv);
         std::shared_ptr<Basic_bitvector> slt_maximal_marks = make_shared<Basic_bitvector>(slt_maximal_marks_sdsl);
         slt_maximal_marks->init_select_support();
         
@@ -173,9 +138,6 @@ void String_Depth_Support_tests(){
     srand(3248923);
     
     String_Depth_Support_Tester SDST;
-    
-    cerr << "Running mark maximal both test" << endl;
-    SDST.test_mark_maximal_both();
     
     cerr << "Running string depth support tests" << endl;
     SDST.test_string_depth("abababbabbabbabaabbaabbabaaabababbbababbbabababababab");

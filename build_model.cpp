@@ -21,6 +21,7 @@
 #include "Precalc.hh"
 #include "FASTA_parsing.hh"
 #include "score_string.hh"
+#include "build_model.hh"
 #include "logging.hh"
 
 #define HUGE_NUMBER 1e15
@@ -72,19 +73,17 @@ public:
     string input_filename;
     bool run_length_encoding;
     
-    Context_Formula* cf;
+    Context_Callback* cf;
     
     Iterator* rev_st_it;
     Iterator* slt_it;
-    Iterator* context_candidate_it;
     
     Build_Time_Config() : only_maxreps(false), depth_bound(HUGE_NUMBER), context_type(UNDEFINED), run_length_encoding(false), 
-                          cf(nullptr), rev_st_it(nullptr), slt_it(nullptr), context_candidate_it(nullptr) {}
+                          cf(nullptr), rev_st_it(nullptr), slt_it(nullptr) {}
     
     ~Build_Time_Config(){
         delete cf;
         delete rev_st_it;
-        delete context_candidate_it;
     }
     
     void assert_all_ok(){
@@ -99,7 +98,6 @@ public:
         assert(cf != nullptr);
         assert(rev_st_it != nullptr);
         assert(slt_it != nullptr);
-        assert(context_candidate_it != nullptr);
     }
     
     string context_type_to_string(Context_Type ct){
@@ -195,15 +193,6 @@ int main(int argc, char** argv){
         }
     }
     
-    if(C.context_type == Build_Time_Config::ENTROPY){
-        // Type W
-        C.context_candidate_it = new Depth_Bounded_SLT_Iterator(C.depth_bound);
-    }
-    if(C.context_type != Build_Time_Config::ENTROPY){
-        // Type aW: need an iterator that iterates to depth bounde minus 1, so that have room for the left extension
-        C.context_candidate_it = new Depth_Bounded_SLT_Iterator(C.depth_bound-1);
-    }
-    
     bool full_topology = !C.only_maxreps;
     if(full_topology){
         C.rev_st_it = new Rev_ST_Iterator();
@@ -215,7 +204,7 @@ int main(int argc, char** argv){
     string filename = split(C.input_filename,'/').back();
     write_log("Starting to build the model");
     Global_Data G;
-    build_model(G, reference, *C.cf, *C.slt_it, *C.rev_st_it, *C.slt_it, C.run_length_encoding, false);
+    build_model(G, reference, *C.cf, *C.slt_it, *C.rev_st_it, C.run_length_encoding, false);
     write_log("Writing model to directory: " + C.outputdir);
     
     G.store_all_to_disk(C.outputdir, filename);

@@ -15,6 +15,7 @@
 #include "RLEBWT.hh"
 #include "Basic_bitvector.hh"
 #include "RLE_bitvector.hh"
+#include "logging.hh"
 #include <stack>
 #include <vector>
 #include <memory>
@@ -90,8 +91,8 @@ double main_loop(string& S, Global_Data& data, Topology& topo_alg, Scoring_Funct
     Interval I(0,data.revbwt->size()-1); // todo: or: index.empty_string()
     int64_t string_depth = 0;
     for(int64_t i = 0; i < S.size(); i++){
-        // Compute probability of S[i]
-        logprob += log2(scorer.score(I, string_depth, S[i], topo_alg, *data.revbwt));
+        // Compute log-probability of S[i]
+        logprob += scorer.score(I, string_depth, S[i], topo_alg, *data.revbwt, data);
         
         // Update I and string_depth
         pair<Interval, int64_t> new_values = updater.update(I, string_depth, S[i], data, topo_alg, *data.revbwt);
@@ -244,13 +245,13 @@ class Basic_Scorer : public Scoring_Function {
 public:
 
     double escape_prob;
-    bool check_depth;
+    bool maxrep_contexts;
 
-    Basic_Scorer(double escape_prob, bool check_depth) : escape_prob(escape_prob), check_depth(check_depth) {}
+    Basic_Scorer(double escape_prob, bool maxrep_contexts) : escape_prob(escape_prob), maxrep_contexts(maxrep_contexts) {}
 
-    virtual double score(Interval I, int64_t d, char c, Topology& topology, BWT& index){
+    virtual double score(Interval I, int64_t d, char c, Topology& topology, BWT& index, Global_Data& G){
         int64_t node = topology.leaves_to_node(I);
-        if(check_depth && topology.rev_st_string_depth(node) > d){
+        if(maxrep_contexts && G.rev_st_maximal_marks->at(node) == 1 && topology.rev_st_string_depth(node) > d){
             // Inside an edge -> lex interval I represents the node at the end that is further
             // away from the root -> need to go to the edge closest to the root first
             // before taking the lowest marked ancestor, because otherwise the lowest common
@@ -265,88 +266,72 @@ public:
         Interval R = index.search(I, c);
         
         if(R.size() == 0){
-           return escape_prob;
+            return log2(escape_prob);
         } else{
             // don't count in the dollar the context in the interval of the empty string, hence -1
-            return (double)R.size() / min(I.size(), index.size()-1);
+            return log2((double)R.size()) - log2(min(I.size(), index.size()-1));
         }
     }
 
 };
 
-// All components of the model will be stored into G
-void build_model(Global_Data& G, string& T, Context_Formula& context_formula,
-                        Iterator& slt_it, Iterator& rev_slt_it, Iterator& context_candidate_iterator,
-                        bool run_length_coding, bool compute_string_depths){
+class Recursive_Scorer : public Scoring_Function {
+
+public:
+
+    double escape_prob;
+    bool maxrep_contexts;
+    
+    int64_t get_context_depth(int64_t open, Topology& topology){
+        if(maxrep_contexts) return topology.rev_st_string_depth(open);
+        else{
+            if(open == 0) return 0; // Root is a special case: It's not a left-extension of a maxrep
+            return topology.rev_st_string_depth(topology.rev_st_parent(open)) + 1; // One-char left-extension of a maxrep
+        }        
+    }
+
+    Recursive_Scorer(double escape_prob, bool maxrep_contexts) 
+    : escape_prob(escape_prob), maxrep_contexts(maxrep_contexts) {}
+
+    virtual double score(Interval I, int64_t d, char c, Topology& topology, BWT& index, Global_Data& G){
+        int64_t node = topology.leaves_to_node(I);
+        if(maxrep_contexts && G.rev_st_maximal_marks->at(node) == 1 && topology.rev_st_string_depth(node) > d){
+            // Inside an edge -> lex interval I represents the node at the end that is further
+            // away from the root -> need to go to the edge closest to the root first
+            // before taking the lowest marked ancestor, because otherwise the lowest common
+            // ancestor might give us the node that is further away from the root in case it is marked.
+            // This thing is not necessary to do if contexts are left extensions of maxreps
+            node = topology.rev_st_parent(node);
+        }
+        node = topology.rev_st_lma(node);
+        I = topology.node_to_leaves(node);
+
+        // Compute the probability of S[i]
+        Interval R = index.search(I, c);
         
-    
-    BD_BWT_index<> bibwt((uint8_t*)T.c_str());
-    
-    slt_it.set_index(&bibwt);
-    rev_slt_it.set_index(&bibwt);
-    
-    Rev_st_topology RSTT = get_rev_st_bpr_and_pruning(bibwt, rev_slt_it);
-    G.rev_st_bpr = std::shared_ptr<Bitvector>(new Basic_bitvector(RSTT.bpr));
-    
-    G.rev_st_bpr->init_rank_10_support();
-    G.rev_st_bpr->init_select_10_support();
-    G.rev_st_bpr->init_bps_support();
-    
-    if(run_length_coding){
-        G.pruning_marks = std::shared_ptr<Bitvector>(new RLE_bitvector(RSTT.pruning_marks));
-    } else{
-        G.pruning_marks = std::shared_ptr<Bitvector>(new Basic_bitvector(RSTT.pruning_marks));
-    }
-    
-    G.pruning_marks->init_rank_support();
-    G.pruning_marks->init_select_support();
-    
-    Pruned_Topology_Mapper mapper(G.rev_st_bpr, G.pruning_marks);
+        if(R.size() == 0){
+            // Did not find c
+            if(d == 0) return log2(escape_prob); // Root
             
-    G.rev_st_maximal_marks = std::shared_ptr<Bitvector>(new Basic_bitvector(get_rev_st_maximal_marks(bibwt, G.rev_st_bpr->size(), rev_slt_it, mapper)));
-    G.rev_st_maximal_marks->init_rank_support();
-    
-    G.rev_st_context_marks = std::shared_ptr<Bitvector>(new Basic_bitvector(context_formula.get_rev_st_context_marks(&bibwt, G.rev_st_bpr->size(), context_candidate_iterator, mapper)));
-    G.rev_st_context_marks->init_rank_support();
-    G.rev_st_context_marks->init_select_support();
-    
-    G.rev_st_bpr_context_only = std::shared_ptr<Bitvector>(new Basic_bitvector(get_rev_st_bpr_context_only(&G)));
-    G.rev_st_bpr_context_only->init_bps_support();
-    
-    sdsl::bit_vector sdsl_slt_bpr = get_slt_topology(bibwt, slt_it);
-    if(run_length_coding){
-        G.slt_bpr = std::shared_ptr<Bitvector>(new RLE_bitvector(sdsl_slt_bpr));
-    } else{
-        G.slt_bpr = std::shared_ptr<Bitvector>(new Basic_bitvector(sdsl_slt_bpr));
+            int64_t depth1 = get_context_depth(node, topology);
+            node = topology.rev_st_lma(topology.rev_st_parent(node));
+            I = topology.node_to_leaves(node);
+            int64_t depth2 = get_context_depth(node, topology);
+            assert(depth1 != depth2);
+            int64_t distance_travelled = depth1 - depth2;
+            double ancestor_score = score(I, depth2, c, topology, index, G);
+            for(int64_t i = 0; i < distance_travelled; i++) ancestor_score += log2(escape_prob);
+            return ancestor_score;
+        } else{
+            // Found c
+            return log2(1 - escape_prob) + log2(R.size()) - log2(min(I.size(), index.size()-1));
+            // Don't count in the dollar the context in the interval of the empty string, hence -1
+        }
     }
-    G.slt_bpr->init_rank_support();
-    
-    if(run_length_coding){
-        G.slt_maximal_marks = std::shared_ptr<Bitvector>(new RLE_bitvector(get_slt_maximal_marks(bibwt, sdsl_slt_bpr, slt_it)));
-    } else{
-        G.slt_maximal_marks = std::shared_ptr<Bitvector>(new Basic_bitvector(get_slt_maximal_marks(bibwt, sdsl_slt_bpr, slt_it)));
-    }
-    G.slt_maximal_marks->init_rank_support();
-    G.slt_maximal_marks->init_select_support();
-    
-    if(compute_string_depths){
-        cerr << "Not implemented error: compute string depths" << endl;
-        throw(std::runtime_error("Not implemented error: compute string depths"));
-        //G.string_depths = CA.get_rev_st_string_depths(G.bibwt, G.rev_st_bpr.size(), mapper);
-    }
-    
-    // Store reverse BWT for scoring. Todo: reuse already computed bibwt
-    string T_reverse(T.rbegin(), T.rend());
-    if(run_length_coding){
-        BWT* bwt = new RLEBWT<>((uint8_t*)T_reverse.c_str());
-        G.revbwt = std::move(std::unique_ptr<BWT>(bwt)); // transfer ownership to G
-    } else{
-        BWT* bwt = new Basic_BWT<>((uint8_t*)T_reverse.c_str());
-        G.revbwt = std::move(std::unique_ptr<BWT>(bwt)); // transfer ownership to G
-    }
-    
-    
-}
+
+};
+
+
 
 template <typename index_t = BD_BWT_index<>,
           typename String_Depth_Support_t = String_Depth_Support,
@@ -365,17 +350,11 @@ double score_string(string& S, Global_Data& G, Scoring_Function& scorer, Loop_In
     init_support<String_Depth_Support_t>(SDS, &G);
     init_support<Parent_Support_t>(PS, &G);
     init_support<LMA_Support_t>(LMAS, &G);
-    
-    //typedef Topology_Algorithms<String_Depth_Support,Parent_Support,LMA_Support> topo_alg_t; 
+     
     Topology_Algorithms<String_Depth_Support,Parent_Support,LMA_Support> topology(&G, &mapper, SDS, PS, LMAS);
-    
-    //Basic_Scorer<topo_alg_t, BD_BWT_index<> > scorer(escape, !aW_contexts);
-    //Maxrep_Pruned_Updater<topo_alg_t, BD_BWT_index<> > updater;
-    
+
     return main_loop(S,G,topology,scorer,updater);
 }
-
-// double main_loop(string& S, bwt_t& index, topo_alg_t& topo_alg, scorer_t scorer, updater_t updater){
     
     
 #endif

@@ -40,6 +40,7 @@ class String_Depth_Support{
     std::shared_ptr<Bitvector> slt_maximal_marks;
     
     int64_t string_depth(int64_t open){
+        assert(rev_st_maximal_marks->at(open) == 1); // Only works for maxreps
         return slt_tree_depth(preorder_rank_to_slt_bpr(rev_st_bpr_to_preorder_rank(open)));
     }
 
