@@ -66,7 +66,7 @@ public:
 
 		bit_vector bv(b.size());
 
-		for(uint i=0;i<b.size();++i)
+		for(ulint i=0;i<b.size();++i)
 			bv[i] = b[i];
 
 		sdv = sd_vector<>(bv);
