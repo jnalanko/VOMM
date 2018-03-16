@@ -113,6 +113,9 @@ public:
                 pruning[i] = 1;
             }
         }
+        
+        counters_open.free_memory();
+        counters_close.free_memory();
     }
     
     Rev_st_topology get_result(){

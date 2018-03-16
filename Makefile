@@ -1,20 +1,29 @@
 CXX = g++
 STD = -std=c++11
 
-.PHONY: bpr_to_dot score_string build_model build_model_optimized build_model_profile score_string_optimized tests maxreps_stats asd score_string_profile all profiling profiling tests
+.PHONY: bpr_to_dot score_string build_model build_model_optimized build_model_profile score_string_optimized tests maxreps_stats asd score_string_profile all profiling tests just_traverse reconstruct reconstruct_optimized
 
 libraries= BD_BWT_index/lib/*.a sdsl-lite/build/lib/libsdsl.a sdsl-lite/build/external/libdivsufsort/lib/libdivsufsort64.a 
 includes= -I BD_BWT_index/include -I sdsl-lite/include
 
-all: tests score_string build_model
-optimized: score_string_optimized build_model_optimized
+all: tests score_string build_model reconstruct
+optimized: score_string_optimized build_model_optimized reconstruct_optimized
 profiling: score_string_profile build_model_profile
 
+reconstruct:
+	$(CXX) $(STD) reconstruct.cpp $(libraries) -o reconstruct -Wall -Wno-sign-compare -Wextra $(includes) -g
+	
+reconstruct_optimized:
+	$(CXX) $(STD) reconstruct.cpp $(libraries) -o reconstruct -Wall -Wno-sign-compare -Wextra $(includes) -g
+	
 tests:
 	$(CXX) $(STD) tests.cpp $(libraries) -o tests -Wall -Wno-sign-compare -Wextra $(includes) -g
 
 bpr_to_dot:
 	$(CXX) $(STD) bpr_to_dot.cpp -o bpr_to_dot -Wall -Wno-sign-compare -Wextra
+
+just_traverse:
+	$(CXX) $(STD) -O3 just_traverse.cpp $(libraries) -o just_traverse -Wall -Wno-sign-compare -Wextra $(includes) -g -march=native
 
 build_model:
 	$(CXX) $(STD) build_model.cpp $(libraries) -o build_model -Wall -Wno-sign-compare -Wextra $(includes) -g

@@ -30,14 +30,14 @@ void build_model(Global_Data& G, string& T, Context_Callback& context_formula,
         
     
     write_log("Building the BiBWT");
-    BD_BWT_index<> bibwt((uint8_t*)T.c_str());
+    G.bibwt = make_shared<BD_BWT_index<>>((uint8_t*)T.c_str());
     
-    slt_it.set_index(&bibwt);
-    rev_st_it.set_index(&bibwt);
+    slt_it.set_index(G.bibwt.get());
+    rev_st_it.set_index(G.bibwt.get());
     
     write_log("Building reverse suffix tree BPR and pruning marks");
     Build_REV_ST_BPR_And_Pruning_Callback revstbprcb;
-    revstbprcb.init(bibwt);
+    revstbprcb.init(*G.bibwt);
     iterate_with_callbacks(rev_st_it, &revstbprcb);
     Rev_st_topology RSTT = revstbprcb.get_result();
     G.rev_st_bpr = std::shared_ptr<Bitvector>(new Basic_bitvector(RSTT.bpr));
@@ -60,7 +60,7 @@ void build_model(Global_Data& G, string& T, Context_Callback& context_formula,
     
     write_log("Building SLT BPR");
     Build_SLT_BPR_Callback sltbprcb;
-    sltbprcb.init(bibwt);
+    sltbprcb.init(*G.bibwt);
     iterate_with_callbacks(slt_it, &sltbprcb);
     sdsl::bit_vector sdsl_slt_bpr = sltbprcb.get_result();
     if(run_length_coding){
@@ -75,9 +75,9 @@ void build_model(Global_Data& G, string& T, Context_Callback& context_formula,
     write_log("Marking maximal repeats and contexts");
     Rev_ST_Maximal_Marks_Callback revstmmcb;
     SLT_Maximal_Marks_Callback sltmmcb;
-    revstmmcb.init(bibwt, G.rev_st_bpr->size(), mapper);
-    sltmmcb.init(bibwt, sdsl_slt_bpr);
-    context_formula.init(&bibwt, G.rev_st_bpr->size(), mapper);
+    revstmmcb.init(*G.bibwt, G.rev_st_bpr->size(), mapper);
+    sltmmcb.init(*G.bibwt, sdsl_slt_bpr);
+    context_formula.init(G.bibwt.get(), G.rev_st_bpr->size(), mapper);
     vector<Iterator_Callback*> marking_callbacks = {&revstmmcb, &sltmmcb, &context_formula};
     iterate_with_callbacks(slt_it, marking_callbacks);
     

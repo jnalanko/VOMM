@@ -120,8 +120,11 @@ public:
     virtual void compute_rev_bwt_interval_data(Interval I, Interval_Data& data) = 0; // data.symbols MUST BE lex-ordered!
     virtual Interval_pair left_extend(Interval_pair intervals, Interval_Data& data, int64_t symbol_index) = 0;
     virtual Interval_pair right_extend(Interval_pair intervals, Interval_Data& data, int64_t symbol_index) = 0;
-    virtual void save_to_disk_reverse_only(std::string directory, std::string filename_prefix) = 0;
-    //virtual void load_from_disk(std::string directory, std::string filename_prefix) = 0;
+    virtual void save_to_disk(std::string directory, std::string filename_prefix) = 0;
+    virtual void load_from_disk(std::string directory, std::string filename_prefix) = 0;
+    //virtual void save_to_disk_reverse_only(std::string directory, std::string filename_prefix) = 0;
+    
+    
     
     virtual ~BIBWT() {} // https://stackoverflow.com/questions/8764353/what-does-has-virtual-method-but-non-virtual-destructor-warning-mean-durin
 
@@ -203,6 +206,7 @@ public:
     virtual void increment(int64_t pos) = 0;
     virtual int64_t get(int64_t pos) = 0;
     virtual int64_t size() = 0;
+    virtual void free_memory() = 0;
     
 };
 
