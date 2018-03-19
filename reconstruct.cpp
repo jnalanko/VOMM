@@ -19,7 +19,6 @@
 #include "LMA_Support.hh"
 #include "BPR_tools.hh"
 #include "Precalc.hh"
-#include "FASTA_parsing.hh"
 #include "score_string.hh"
 #include "logging.hh"
 
@@ -80,7 +79,7 @@ public:
     
 };
 
-int main(int argc, char** argv){
+int score_string_main(int argc, char** argv){
     
     if(argc < 4){
         cerr << "Marks contexts again. Usage: see readme." << endl;
@@ -143,4 +142,10 @@ int main(int argc, char** argv){
     
     write_log("Done");
     
+    return 0;
+    
+}
+
+int main(int argc, char** argv){
+    return score_string_main(argc,argv);
 }

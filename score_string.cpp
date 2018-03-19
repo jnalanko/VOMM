@@ -19,7 +19,7 @@
 #include "LMA_Support.hh"
 #include "BPR_tools.hh"
 #include "Precalc.hh"
-#include "FASTA_parsing.hh"
+#include "input_reading.hh"
 #include "score_string.hh"
 #include "logging.hh"
 
@@ -49,20 +49,23 @@ private:
     
 public:
     
-    enum Context_Type {UNDEFINED, EQ234, ENTROPY, KL, PNORM};
+    enum class Context_Type {UNDEFINED, EQ234, ENTROPY, KL, PNORM};
+    enum class Input_Mode {UNDEFINED, RAW, FASTA};
     
+    Input_Mode input_mode;
+    string query_filename;
     bool only_maxreps;
     Context_Type context_type;
     double escapeprob;
     string modeldir;
-    string filename;
+    string reference_filename;
     bool run_length_coding;
     bool recursive_fallback;
     
     Scoring_Function* scorer;
     Loop_Invariant_Updater* updater;
     
-    Scoring_Config() : only_maxreps(false), context_type(UNDEFINED), escapeprob(-1), run_length_coding(false), recursive_fallback(false), scorer(nullptr), updater(nullptr) {}
+    Scoring_Config() : input_mode(Input_Mode::UNDEFINED), only_maxreps(false), context_type(Context_Type::UNDEFINED), escapeprob(-1), run_length_coding(false), recursive_fallback(false), scorer(nullptr), updater(nullptr) {}
     
     ~Scoring_Config(){
         delete scorer;
@@ -71,8 +74,10 @@ public:
     
     void assert_all_ok(){
         assert(modeldir != "");
-        assert(filename != "");
-        assert(context_type != UNDEFINED);
+        assert(reference_filename != "");
+        assert(query_filename != "");
+        assert(input_mode != Input_Mode::UNDEFINED);
+        assert(context_type != Context_Type::UNDEFINED);
         assert(escapeprob != -1);
         assert(scorer != nullptr);
         assert(updater != nullptr);
@@ -80,8 +85,8 @@ public:
     
     void load_info_file(){
         assert(modeldir != "");
-        assert(filename != "");
-        string path = modeldir + "/" + filename + ".info";
+        assert(reference_filename != "");
+        string path = modeldir + "/" + reference_filename + ".info";
         ifstream file(path);
         string ctype;
         file >> only_maxreps >> ctype >> run_length_coding;
@@ -90,10 +95,10 @@ public:
             exit(-1);
         }
         
-        if(ctype == "EQ234") context_type = EQ234;
-        else if(ctype == "entropy") context_type = ENTROPY;
-        else if(ctype == "KL") context_type = KL;
-        else if(ctype == "pnorm") context_type = PNORM;
+        if(ctype == "EQ234") context_type = Context_Type::EQ234;
+        else if(ctype == "entropy") context_type = Context_Type::ENTROPY;
+        else if(ctype == "KL") context_type = Context_Type::KL;
+        else if(ctype == "pnorm") context_type = Context_Type::PNORM;
         else assert(false);
         
     }
@@ -108,26 +113,22 @@ int main(int argc, char** argv){
     }
     
     Scoring_Config C;
-    
-
-    
-    vector<string> queries;
-    string reference;
     for(int64_t i = 1; i < argc; i++){
         if(argv[i] == string("--query-raw")){
             i++;
-            queries.push_back(read_raw_file(argv[i]));
+            C.query_filename = argv[i];
+            C.input_mode = Scoring_Config::Input_Mode::RAW;
         } else if(argv[i] == string("--query-fasta")){
             i++;
-            auto v = parse_FASTA(argv[i]);
-            for(auto pair : v) queries.push_back(pair.first);
+            C.query_filename = argv[i];
+            C.input_mode = Scoring_Config::Input_Mode::FASTA;
         }
         else if(argv[i] == string("--dir")){
             i++;
             C.modeldir = argv[i];
         } else if(argv[i] == string("--file")){
             i++;
-            C.filename = argv[i];
+            C.reference_filename = argv[i];
         } else if(argv[i] == string("--escapeprob")){
             i++;
             C.escapeprob = stod(argv[i]);
@@ -142,9 +143,9 @@ int main(int argc, char** argv){
     C.load_info_file();
     
     if(C.recursive_fallback){
-        C.scorer = new Recursive_Scorer(C.escapeprob, (C.context_type == Scoring_Config::ENTROPY));
+        C.scorer = new Recursive_Scorer(C.escapeprob, (C.context_type == Scoring_Config::Context_Type::ENTROPY));
     } else{
-        C.scorer = new Basic_Scorer(C.escapeprob, (C.context_type == Scoring_Config::ENTROPY));
+        C.scorer = new Basic_Scorer(C.escapeprob, (C.context_type == Scoring_Config::Context_Type::ENTROPY));
     }
     
     if(C.only_maxreps){
@@ -158,15 +159,22 @@ int main(int argc, char** argv){
     
     write_log("Loading the model from " + C.modeldir);
     Global_Data G;
-    G.load_all_from_disk(C.modeldir, C.filename, C.run_length_coding);
+    G.load_all_from_disk(C.modeldir, C.reference_filename, C.run_length_coding);
     write_log("Starting to score ");
-            
-    score_string(reference, G, *C.scorer, *C.updater);
-          
-    write_log("Starting to process queries");
-    for(string query : queries){
-        cout << score_string(query, G, *C.scorer, *C.updater) << endl;
+    
+    if(C.input_mode == Scoring_Config::Input_Mode::RAW){
+        Raw_file_stream rfs(C.query_filename);
+        cout << score_string(rfs, G, *C.scorer, *C.updater) << endl;
     }
+    
+    if(C.input_mode == Scoring_Config::Input_Mode::FASTA){
+        FASTA_reader fr(C.query_filename);
+        while(!fr.done()){
+            Read_stream input = fr.get_next_query_stream();
+            cout << score_string(input, G, *C.scorer, *C.updater) << endl;
+        }
+    }
+    
     write_log("Done");
     
 }

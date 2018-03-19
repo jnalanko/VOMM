@@ -125,4 +125,6 @@ void build_model(Global_Data& G, string& T, Context_Callback& context_formula,
     
 }
 
+int build_model_main(int argc, char** argv);
+
 #endif

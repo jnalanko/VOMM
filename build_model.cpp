@@ -19,7 +19,7 @@
 #include "LMA_Support.hh"
 #include "BPR_tools.hh"
 #include "Precalc.hh"
-#include "FASTA_parsing.hh"
+#include "input_reading.hh"
 #include "score_string.hh"
 #include "build_model.hh"
 #include "logging.hh"
@@ -123,7 +123,7 @@ public:
     
 };
 
-int main(int argc, char** argv){
+int build_model_main(int argc, char** argv){
     if(argc < 4){
         cerr << "Computes the probability of string S against string T" << endl;
         cerr << "Usage: ./build_model [--reference-fasta or --reference-raw] T.txt <then options>" << endl;
@@ -210,4 +210,9 @@ int main(int argc, char** argv){
     G.store_all_to_disk(C.outputdir, filename);
     C.write_to_file(C.outputdir, filename + ".info");
     
+    return 0;
+}
+
+int main(int argc, char** argv){
+    return build_model_main(argc, argv);
 }

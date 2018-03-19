@@ -86,16 +86,18 @@ public:
     }
 };
 
-double main_loop(string& S, Global_Data& data, Topology& topo_alg, Scoring_Function& scorer, Loop_Invariant_Updater& updater){
+template<typename inputstream_t>
+double main_loop(inputstream_t& S, Global_Data& data, Topology& topo_alg, Scoring_Function& scorer, Loop_Invariant_Updater& updater){
     double logprob = 0;
     Interval I(0,data.revbwt->size()-1); // todo: or: index.empty_string()
     int64_t string_depth = 0;
-    for(int64_t i = 0; i < S.size(); i++){
-        // Compute log-probability of S[i]
-        logprob += scorer.score(I, string_depth, S[i], topo_alg, *data.revbwt, data);
+    char c;
+    while(S.getchar(c)){
+        // Compute log-probability of c
+        logprob += scorer.score(I, string_depth, c, topo_alg, *data.revbwt, data);
         
         // Update I and string_depth
-        pair<Interval, int64_t> new_values = updater.update(I, string_depth, S[i], data, topo_alg, *data.revbwt);
+        pair<Interval, int64_t> new_values = updater.update(I, string_depth, c, data, topo_alg, *data.revbwt);
         I = new_values.first;
         string_depth = new_values.second;
     }
@@ -331,14 +333,15 @@ public:
 
 };
 
-
-
+// Input stream must have a function getchar(char& c), which returns
+// false it the end of the stream was reached
 template <typename index_t = BD_BWT_index<>,
-          typename String_Depth_Support_t = String_Depth_Support,
-          typename Parent_Support_t = Parent_Support,
-          typename LMA_Support_t = LMA_Support>
-double score_string(string& S, Global_Data& G, Scoring_Function& scorer, Loop_Invariant_Updater& updater){
-
+typename String_Depth_Support_t = String_Depth_Support,
+typename Parent_Support_t = Parent_Support,
+typename LMA_Support_t = LMA_Support,
+typename input_stream_t>
+double score_string(input_stream_t& S, Global_Data& G, Scoring_Function& scorer, Loop_Invariant_Updater& updater){
+    
     assert(G.revbwt != nullptr);
     Pruned_Topology_Mapper mapper; // Also works for non-pruned topology
     init_support(mapper, &G);
@@ -350,11 +353,42 @@ double score_string(string& S, Global_Data& G, Scoring_Function& scorer, Loop_In
     init_support<String_Depth_Support_t>(SDS, &G);
     init_support<Parent_Support_t>(PS, &G);
     init_support<LMA_Support_t>(LMAS, &G);
-     
+    
     Topology_Algorithms<String_Depth_Support,Parent_Support,LMA_Support> topology(&G, &mapper, SDS, PS, LMAS);
-
+    
     return main_loop(S,G,topology,scorer,updater);
 }
+
+class Input_Stream{
+// getchar function for a string
+public:
+
+    std::string S;
+    int64_t pos;
     
+    Input_Stream(string& S) : S(S), pos(0) {}
+    
+    bool getchar(char& c){
+        if(pos == S.size()){
+            return false;
+        } else{
+            c = S[pos];
+            pos++;
+            return true;
+        }
+    }
+};
+
+template <typename index_t = BD_BWT_index<>,
+          typename String_Depth_Support_t = String_Depth_Support,
+          typename Parent_Support_t = Parent_Support,
+          typename LMA_Support_t = LMA_Support>
+double score_string(string& S, Global_Data& G, Scoring_Function& scorer, Loop_Invariant_Updater& updater){
+
+    Input_Stream is(S);
+    return score_string<index_t, String_Depth_Support_t, Parent_Support_t, LMA_Support_t, Input_Stream>(is,G,scorer,updater);
+}
+
+int score_string_main(int argc, char** argv);
     
 #endif
