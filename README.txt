@@ -85,7 +85,7 @@ Full list of flags:
     - stats.depths_and_scores.txt
       One line for each context: [string depth] [tree depth] [score(s)]
       The score(s) are:
-       In case of --KL, --entropy or --pnorm, the values that is compared 
+       In case of --KL, --entropy or --pnorm, the value that is compared 
        against the threshold. In case of --four-thresholds, there are three 
        values corresponding to equations 2,3 and 4 in the paper A 
        Framework for Space-Efficient String Kernels.
