@@ -79,9 +79,12 @@ Full list of flags:
     
 --context-stats
     Computes statistics on the contexts. Writes three files into the model directory:
-    stats.context_scores.txt
-    stats.context_summary.txt: Number of context candidates and number of contexts
-    stats.depths.txt
+    - stats.context_summary.txt: Number of context candidates and number of contexts
+    - stats.depths.txt: String depths and reverse suffix treedepths of contexts
+    - stats.context_scores.txt: For every context, the values that are comprared to the threshold. 
+          In case of --KL, --entropy or --pnorm, there is only one value
+          In case of --four-thresholds, there are three values corresponding to equations 2,3 and 4
+          in the paper A Framework for Space-Efficient String Kernels.
 
     
 If there is a problem with some of the flags maybe I updated the flags but forgot
