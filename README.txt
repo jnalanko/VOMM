@@ -78,7 +78,7 @@ Full list of flags:
     Use the context formula with the four thresholds tau1,tau2,tau3,tau4
     
 --context-stats
-    Computes statistics on the contexts. Writes three files 
+    Computes statistics on the contexts. Writes two files 
     into the model directory:
     - stats.context_summary.txt: 
       Number of context candidates and number of contexts
