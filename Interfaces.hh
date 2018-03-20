@@ -192,10 +192,13 @@ public:
 
 };
 
+class Scores_writer;
 class Context_Callback : public Iterator_Callback{
 public:
-    virtual void init(BIBWT* index, int64_t rev_st_bpr_size, Topology_Mapper& mapper) = 0;
+    
+    virtual void init(BIBWT* index, int64_t rev_st_bpr_size, Topology_Mapper& mapper, Scores_writer* writer) = 0;
     virtual sdsl::bit_vector get_result() = 0;
+    virtual int64_t get_number_of_candidates() = 0;
     virtual ~Context_Callback() {} // https://stackoverflow.com/questions/8764353/what-does-has-virtual-method-but-non-virtual-destructor-warning-mean-durin
 
 };

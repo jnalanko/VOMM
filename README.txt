@@ -63,7 +63,7 @@ Full list of flags:
     Enables run length encoding
     
 --depth [integer depth]
-    Enables depth pruning to the given depth. ALSO ENABLES MAXREP PRUNING.
+    Enables depth pruning to the given depth
    
 --entropy [float threshold]
     Use entropy-style contexts with the given threshold

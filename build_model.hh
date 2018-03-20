@@ -22,11 +22,16 @@
 #include <memory>
 
 // All components of the model will be stored into G
+// T: reference string
+// context_formula: a callback for context marking
 // slt_it: iterator that gives all nodes that we want in the SLT
-// rev_st_it: iterator that gives all nodes that we want in the rev ST.
+// rev_st_it: iterator that gives all nodes that we want in the rev ST
+// run_length_coding: self-explatonary
+// compute_string_depths: Get precomputed string depths
+// wr: where to write context stats
 
 void build_model(Global_Data& G, string& T, Context_Callback& context_formula,
-                        Iterator& slt_it, Iterator& rev_st_it, bool run_length_coding, bool compute_string_depths){
+                 Iterator& slt_it, Iterator& rev_st_it, bool run_length_coding, bool compute_string_depths, Scores_writer& wr){
         
     
     write_log("Building the BiBWT");
@@ -77,7 +82,7 @@ void build_model(Global_Data& G, string& T, Context_Callback& context_formula,
     SLT_Maximal_Marks_Callback sltmmcb;
     revstmmcb.init(*G.bibwt, G.rev_st_bpr->size(), mapper);
     sltmmcb.init(*G.bibwt, sdsl_slt_bpr);
-    context_formula.init(G.bibwt.get(), G.rev_st_bpr->size(), mapper);
+    context_formula.init(G.bibwt.get(), G.rev_st_bpr->size(), mapper, &wr);
     vector<Iterator_Callback*> marking_callbacks = {&revstmmcb, &sltmmcb, &context_formula};
     iterate_with_callbacks(slt_it, marking_callbacks);
     
@@ -122,9 +127,55 @@ void build_model(Global_Data& G, string& T, Context_Callback& context_formula,
     }
     
     //cout << G.toString() << endl;
-    
+        
+}
+
+void build_model(Global_Data& G, string& T, Context_Callback& context_formula,
+                 Iterator& slt_it, Iterator& rev_st_it, bool run_length_coding, bool compute_string_depths){
+    // No score Scores_writer
+    Scores_writer wr;
+    build_model(G,T,context_formula, slt_it, rev_st_it, run_length_coding, compute_string_depths, wr);
 }
 
 int build_model_main(int argc, char** argv);
+
+void write_depth_statistics(Global_Data& G, string filepath){
+    ofstream depths;
+    depths.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    depths.open(filepath);
+    Pruned_Topology_Mapper mapper(G.rev_st_bpr, G.pruning_marks); // Works for both pruned and non-pruned
+    String_Depth_Support SDS;
+    init_support<String_Depth_Support>(SDS, &G);
+    
+    depths << "string-depth rev-st-treedepth" << endl;
+    for(int64_t i = 0; i < G.rev_st_context_marks->size(); i++){
+        if(G.rev_st_context_marks->at(i) == 1 && G.rev_st_bpr->at(i) == 1){
+            // Open parenthesis of a marked node
+            // Compute string depth
+            if(G.rev_st_maximal_marks->at(i) == 1){
+                // Maxrep
+                depths << SDS.string_depth(i) << " ";
+            } else{
+                // One-char left-extension of a maxrep. Go to parent and add 1 to depth
+                depths << SDS.string_depth(G.rev_st_bpr->enclose(i)) + 1 << " ";
+            }
+            
+            // Compute tree depth
+            depths << G.rev_st_bpr->excess(i) - 1; //-1: root has depth 0
+            depths << "\n";
+        }
+    }
+}
+
+void write_context_summary(Global_Data& G, int64_t n_candidates, string filepath){
+    ofstream summary;
+    summary.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    summary.open(filepath);
+    summary << "Number of contexts: " << G.rev_st_bpr_context_only->size() / 2 << endl; // Open and close marked for each context
+    summary << "Number of context candidates: " << n_candidates << endl; // Open and close marked for each
+}
+
+
+
 
 #endif

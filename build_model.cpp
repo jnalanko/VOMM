@@ -66,6 +66,7 @@ public:
     
     enum Context_Type {UNDEFINED, EQ234, ENTROPY, KL, PNORM};
     
+    bool context_stats;
     bool only_maxreps;
     int64_t depth_bound;
     Context_Type context_type;
@@ -78,7 +79,7 @@ public:
     Iterator* rev_st_it;
     Iterator* slt_it;
     
-    Build_Time_Config() : only_maxreps(false), depth_bound(HUGE_NUMBER), context_type(UNDEFINED), run_length_encoding(false), 
+    Build_Time_Config() : context_stats(false), only_maxreps(false), depth_bound(HUGE_NUMBER), context_type(UNDEFINED), run_length_encoding(false), 
                           cf(nullptr), rev_st_it(nullptr), slt_it(nullptr) {}
     
     ~Build_Time_Config(){
@@ -186,6 +187,8 @@ int build_model_main(int argc, char** argv){
             i++;
             string dir = argv[i];
             C.outputdir = dir;
+        } else if(argv[i] == string("--context-stats")){
+            C.context_stats = true;
         }
         else{
             cerr << "Invalid argument: " << argv[i] << endl;
@@ -204,7 +207,15 @@ int build_model_main(int argc, char** argv){
     string filename = split(C.input_filename,'/').back();
     write_log("Starting to build the model");
     Global_Data G;
-    build_model(G, reference, *C.cf, *C.slt_it, *C.rev_st_it, C.run_length_encoding, false);
+    Scores_writer wr;
+    if(C.context_stats){
+        wr.set_file(C.outputdir + "/stats.context_scores.txt");
+    }
+    build_model(G, reference, *C.cf, *C.slt_it, *C.rev_st_it, C.run_length_encoding, false, wr);
+    if(C.context_stats){ 
+        write_depth_statistics(G, C.outputdir + "/stats.depths.txt");
+        write_context_summary(G, C.cf->get_number_of_candidates(), C.outputdir + "/stats.context_summary.txt");
+    }
     write_log("Writing model to directory: " + C.outputdir);
     
     G.store_all_to_disk(C.outputdir, filename);
@@ -216,3 +227,4 @@ int build_model_main(int argc, char** argv){
 int main(int argc, char** argv){
     return build_model_main(argc, argv);
 }
+

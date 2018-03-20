@@ -20,6 +20,7 @@
 #include "BPR_tools.hh"
 #include "Precalc.hh"
 #include "score_string.hh"
+#include "build_model.hh"
 #include "logging.hh"
 
 using namespace std;
@@ -48,6 +49,7 @@ private:
     
 public:
         
+    bool context_stats;
     bool only_maxreps;
     bool run_length_coding;
     
@@ -56,7 +58,7 @@ public:
     string modeldir;
     string filename;
     
-    Reconstruction_Config() : only_maxreps(false), run_length_coding(false), cf(nullptr) {}
+    Reconstruction_Config() : context_stats(false), only_maxreps(false), run_length_coding(false), cf(nullptr) {}
     
     void assert_all_ok(){
         assert(modeldir != "");
@@ -116,6 +118,8 @@ int score_string_main(int argc, char** argv){
             i++; t3 = stod(argv[i]);
             i++; t4 = stod(argv[i]);
             C.cf = new EQ234_Formula(t1,t2,t3,t4);
+        } else if(argv[i] == string("--context-stats")){
+            C.context_stats = true;
         } else{
             cerr << "Invalid argument: " << argv[i] << endl;
             return -1;
@@ -132,11 +136,20 @@ int score_string_main(int argc, char** argv){
     
     SLT_Iterator iterator(G.bibwt.get());
     Pruned_Topology_Mapper mapper(G.rev_st_bpr, G.pruning_marks);
-    C.cf->init(G.bibwt.get(), G.rev_st_bpr->size(), mapper);
+    Scores_writer wr;
+    if(C.context_stats){
+        wr.set_file(C.modeldir + "/stats.context_scores.txt");
+    }
+    C.cf->init(G.bibwt.get(), G.rev_st_bpr->size(), mapper, &wr);
     iterate_with_callback(iterator, C.cf);
     G.rev_st_context_marks = make_shared<Basic_bitvector>(C.cf->get_result());
     G.rev_st_context_marks->init_rank_support();
     G.rev_st_context_marks->init_select_support();
+    
+    if(C.context_stats){ 
+        write_depth_statistics(G, C.modeldir + "/stats.depths.txt");
+        write_context_summary(G, C.cf->get_number_of_candidates(), C.modeldir + "/stats.context_summary.txt");
+    }
     
     G.store_all_to_disk(C.modeldir, C.filename);
     
