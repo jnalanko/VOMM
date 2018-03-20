@@ -31,7 +31,7 @@
 // wr: where to write context stats
 
 void build_model(Global_Data& G, string& T, Context_Callback& context_formula,
-                 Iterator& slt_it, Iterator& rev_st_it, bool run_length_coding, bool compute_string_depths, Scores_writer& wr){
+                 Iterator& slt_it, Iterator& rev_st_it, bool run_length_coding, bool compute_string_depths, Stats_writer& wr){
         
     
     write_log("Building the BiBWT");
@@ -76,7 +76,7 @@ void build_model(Global_Data& G, string& T, Context_Callback& context_formula,
     }
     G.slt_bpr->init_rank_support();
     
-    
+    wr.set_data(&G);
     write_log("Marking maximal repeats and contexts");
     Rev_ST_Maximal_Marks_Callback revstmmcb;
     SLT_Maximal_Marks_Callback sltmmcb;
@@ -133,12 +133,13 @@ void build_model(Global_Data& G, string& T, Context_Callback& context_formula,
 void build_model(Global_Data& G, string& T, Context_Callback& context_formula,
                  Iterator& slt_it, Iterator& rev_st_it, bool run_length_coding, bool compute_string_depths){
     // No score Scores_writer
-    Scores_writer wr;
+    Stats_writer wr;
     build_model(G,T,context_formula, slt_it, rev_st_it, run_length_coding, compute_string_depths, wr);
 }
 
 int build_model_main(int argc, char** argv);
 
+/*
 void write_depth_statistics(Global_Data& G, string filepath){
     ofstream depths;
     depths.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -165,7 +166,7 @@ void write_depth_statistics(Global_Data& G, string filepath){
             depths << "\n";
         }
     }
-}
+} */
 
 void write_context_summary(Global_Data& G, int64_t n_candidates, string filepath){
     ofstream summary;

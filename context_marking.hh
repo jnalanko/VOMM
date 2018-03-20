@@ -17,32 +17,46 @@
 
 using namespace std;
 
-class Scores_writer{
+class Stats_writer{
 // Wrapper for ofstream that can be disabled
+private:
+
+    Global_Data* G;
+    bool enabled;
+    ofstream outfile;    
+    
 public:
     
-    Scores_writer() : enabled(false) {
-        scores_out.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    Stats_writer() : G(nullptr), enabled(false) {
+        outfile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     }
     
     void set_file(string filename){
-        scores_out.open(filename);
+        outfile.open(filename);
         enabled = true;
     }
     
-    bool enabled;
-    ofstream scores_out;
+    void set_data(Global_Data* G){
+        this->G = G;
+    }
+
+    void write_depths(int64_t stringdepth, int64_t open_paren){
+        assert(G != nullptr);
+        if(enabled){
+            outfile << stringdepth << " " << G->rev_st_bpr->excess(open_paren) - 1 << " ";
+        }
+    }
     
     template<typename T>
-    friend Scores_writer& operator<<(Scores_writer& wr, const T& data); 
+    friend Stats_writer& operator<<(Stats_writer& wr, const T& data); 
     
 };
 
 template<typename T>
-Scores_writer& operator<<(Scores_writer& wr, const T& data){  
+Stats_writer& operator<<(Stats_writer& wr, const T& data){  
     if(!wr.enabled) return wr;
     else{
-        wr.scores_out << data;
+        wr.outfile << data;
         return wr;
     }
 }  
@@ -68,7 +82,7 @@ public:
     sdsl::bit_vector marks;
     int64_t depth_bound;
     int64_t n_candidates;
-    Scores_writer* writer;
+    Stats_writer* writer;
 
     // Reusable space
     BD_BWT_index<>::Interval_Data D_W_forward;
@@ -78,7 +92,7 @@ public:
     Entropy_Formula(double threshold) : threshold(threshold), depth_bound(1e18), n_candidates(0), writer(nullptr) {}
     Entropy_Formula(double threshold, double depth_bound) : threshold(threshold), depth_bound(depth_bound), n_candidates(0), writer(nullptr) {}
     
-    virtual void init(BIBWT* index, int64_t rev_st_bpr_size, Topology_Mapper& mapper, Scores_writer* writer){
+    virtual void init(BIBWT* index, int64_t rev_st_bpr_size, Topology_Mapper& mapper, Stats_writer* writer){
         this->index = index;
         this->rev_st_bpr_size = rev_st_bpr_size;
         this->mapper = &mapper;
@@ -137,6 +151,7 @@ public:
             int64_t close = mapper->find_close(open);
             marks[open] = 1;
             marks[close] = 1;
+            writer->write_depths(top.depth, open);
             *writer << EQ7 << "\n";
         }
     }
@@ -187,7 +202,7 @@ public:
     BIBWT* index;
     int64_t depth_bound;
     int64_t n_candidates;
-    Scores_writer* writer;
+    Stats_writer* writer;
     
     EQ234_Formula(double tau1, double tau2, double tau3, double tau4) 
     : tau1(tau1), tau2(tau2), tau3(tau3), tau4(tau4), depth_bound(1e18), n_candidates(0), writer(nullptr) {
@@ -199,7 +214,7 @@ public:
         assert(tau1 > 0 && tau2 > 0 && tau3 < 1 && tau3 > 0 && tau4 > 1);
     }
     
-    virtual void init(BIBWT* index, int64_t rev_st_bpr_size, Topology_Mapper& mapper, Scores_writer* writer){
+    virtual void init(BIBWT* index, int64_t rev_st_bpr_size, Topology_Mapper& mapper, Stats_writer* writer){
         assert(tau1 > 0 && tau2 > 0 && tau3 < 1 && tau3 > 0 && tau4 > 1);
         marks = sdsl::bit_vector(rev_st_bpr_size,0);
         this->mapper = &mapper;
@@ -260,6 +275,7 @@ public:
                     int64_t close = mapper->find_close(open);
                     marks[open] = 1;
                     marks[close] = 1;
+                    writer->write_depths(top.depth + 1, open);
                     *writer << eq2 << " " << eq3 << " " << eq4 << "\n";
                     break;
                 }
@@ -302,12 +318,12 @@ public:
     BIBWT* index;
     int64_t depth_bound;
     int64_t n_candidates;
-    Scores_writer* writer;
+    Stats_writer* writer;
     
     pnorm_Formula(int64_t p, double threshold) : p(p), threshold(threshold), depth_bound(1e18), n_candidates(0), writer(nullptr)  {}
     pnorm_Formula(int64_t p, double threshold, double depth_bound) : p(p), threshold(threshold), depth_bound(depth_bound), n_candidates(0), writer(nullptr)  {}
     
-    virtual void init(BIBWT* index, int64_t rev_st_bpr_size, Topology_Mapper& mapper, Scores_writer* writer){
+    virtual void init(BIBWT* index, int64_t rev_st_bpr_size, Topology_Mapper& mapper, Stats_writer* writer){
         assert(threshold >= 0);
         marks = sdsl::bit_vector(rev_st_bpr_size,0);
         this->mapper = &mapper;
@@ -364,6 +380,7 @@ public:
                 int64_t close = mapper->find_close(open);
                 marks[open] = 1;
                 marks[close] = 1;
+                writer->write_depths(top.depth + 1, open);
                 *writer << p_norm << "\n";
             }
         }
@@ -402,12 +419,12 @@ public:
     BIBWT* index;
     int64_t depth_bound;
     int64_t n_candidates;
-    Scores_writer* writer;
+    Stats_writer* writer;
     
     KL_Formula(double threshold) : threshold(threshold), depth_bound(1e18), n_candidates(0), writer(nullptr) {}
     KL_Formula(double threshold, double depth_bound) : threshold(threshold), depth_bound(depth_bound), n_candidates(0), writer(nullptr) {}
     
-    virtual void init(BIBWT* index, int64_t rev_st_bpr_size, Topology_Mapper& mapper, Scores_writer* writer){
+    virtual void init(BIBWT* index, int64_t rev_st_bpr_size, Topology_Mapper& mapper, Stats_writer* writer){
         assert(threshold >= 0);
         marks = sdsl::bit_vector(rev_st_bpr_size,0);
         this->mapper = &mapper;
@@ -462,6 +479,7 @@ public:
                 int64_t close = mapper->find_close(open);
                 marks[open] = 1;
                 marks[close] = 1;
+                writer->write_depths(top.depth + 1, open);
                 *writer << KL_divergence << "\n";
             }
         }
@@ -492,7 +510,7 @@ sdsl::bit_vector mark_contexts_entropy(BIBWT& index, int64_t rev_st_bpr_length, 
                                        topology_mapper_t& mapper){
     SLT_Iterator iterator(&index);
     Entropy_Formula F(threshold);
-    Scores_writer wr;
+    Stats_writer wr;
     F.init(&index, rev_st_bpr_length, mapper, &wr);
     iterate_with_callback(iterator, &F);
     return F.get_result();
@@ -513,7 +531,7 @@ sdsl::bit_vector mark_contexts_formulas234(BIBWT& index, int64_t rev_st_bpr_leng
                                       double tau2, double tau3, double tau4, topology_mapper_t& mapper){
     SLT_Iterator iterator(&index);
     EQ234_Formula F(tau1,tau2,tau3,tau4);
-    Scores_writer wr;
+    Stats_writer wr;
     F.init(&index, rev_st_bpr_length, mapper, &wr);
     iterate_with_callback(iterator, &F);
     return F.get_result();
@@ -525,7 +543,7 @@ template <typename topology_mapper_t>
 sdsl::bit_vector mark_contexts_KL(BIBWT& index, int64_t rev_st_bpr_length, double threshold, topology_mapper_t& mapper){
     SLT_Iterator iterator(&index);
     KL_Formula F(threshold);
-    Scores_writer wr;
+    Stats_writer wr;
     F.init(&index, rev_st_bpr_length, mapper, &wr);
     iterate_with_callback(iterator, &F);
     return F.get_result();
@@ -535,7 +553,7 @@ template <typename topology_mapper_t>
 sdsl::bit_vector mark_contexts_p_norm(BIBWT& index, int64_t rev_st_bpr_length, double p, double threshold, topology_mapper_t& mapper){
     SLT_Iterator iterator(&index);
     pnorm_Formula F(p,threshold);
-    Scores_writer wr;
+    Stats_writer wr;
     F.init(&index, rev_st_bpr_length, mapper, &wr);
     iterate_with_callback(iterator, &F);
     return F.get_result();

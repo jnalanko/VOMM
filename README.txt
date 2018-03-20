@@ -82,14 +82,13 @@ Full list of flags:
     into the model directory:
     - stats.context_summary.txt: 
       Number of context candidates and number of contexts
-    - stats.depths.txt: 
-      String depths and reverse suffix treedepths of contexts
-    - stats.context_scores.txt: 
-       For every context, the values that are comprared to the threshold. 
-       In case of --KL, --entropy or --pnorm, there is only one value
-       In case of --four-thresholds, there are three values corresponding 
-       to equations 2,3 and 4 in the paper A Framework for Space-Efficient 
-       String Kernels.
+    - stats.depths_and_scores.txt
+      One line for each context: [string depth] [tree depth] [score(s)]
+      The score(s) are:
+       In case of --KL, --entropy or --pnorm, the values that is compared 
+       against the threshold In case of --four-thresholds, there are three 
+       values corresponding to equations 2,3 and 4 in the paper A 
+       Framework for Space-Efficient String Kernels.
 
     
 If there is a problem with some of the flags maybe I updated the flags but forgot

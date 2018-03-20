@@ -136,9 +136,9 @@ int score_string_main(int argc, char** argv){
     
     SLT_Iterator iterator(G.bibwt.get());
     Pruned_Topology_Mapper mapper(G.rev_st_bpr, G.pruning_marks);
-    Scores_writer wr;
+    Stats_writer wr;
     if(C.context_stats){
-        wr.set_file(C.modeldir + "/stats.context_scores.txt");
+        wr.set_file(C.modeldir + "/stats.depths_and_scores.txt");
     }
     C.cf->init(G.bibwt.get(), G.rev_st_bpr->size(), mapper, &wr);
     iterate_with_callback(iterator, C.cf);
@@ -147,7 +147,6 @@ int score_string_main(int argc, char** argv){
     G.rev_st_context_marks->init_select_support();
     
     if(C.context_stats){ 
-        write_depth_statistics(G, C.modeldir + "/stats.depths.txt");
         write_context_summary(G, C.cf->get_number_of_candidates(), C.modeldir + "/stats.context_summary.txt");
     }
     
