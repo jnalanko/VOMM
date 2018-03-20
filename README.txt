@@ -77,6 +77,13 @@ Full list of flags:
 --four-thresholds [float tau1] [float tau2] [float tau3] [float tau4]
     Use the context formula with the four thresholds tau1,tau2,tau3,tau4
     
+--context-stats
+    Computes statistics on the contexts. Writes three files into the model directory:
+    stats.context_scores.txt
+    stats.context_summary.txt: Number of context candidates and number of contexts
+    stats.depths.txt
+
+    
 If there is a problem with some of the flags maybe I updated the flags but forgot
 to update this documentation, or maybe I typoed something. In this case please check
 the main-function in build_model.cpp to see what the flags really are and how they 
