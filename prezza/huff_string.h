@@ -79,7 +79,7 @@ public:
 
 private:
 
-	wt_huff<> wt;
+	wt_hutu<> wt;
 
 };
 

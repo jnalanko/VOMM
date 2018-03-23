@@ -38,14 +38,14 @@ public:
     
 private:
     
-    sdsl::wt_huff<t_bitvector> bwt;
+    sdsl::wt_hutu<t_bitvector> bwt;
     
     std::vector<int64_t> global_c_array;
     std::vector<uint8_t> alphabet;
     
     std::vector<uint8_t> get_string_alphabet(const uint8_t* s) const;
     int64_t strlen(const uint8_t* str) const;
-    void count_smaller_chars(const sdsl::wt_huff<t_bitvector>& bwt, std::vector<int64_t>& counts, Interval I);
+    void count_smaller_chars(const sdsl::wt_hutu<t_bitvector>& bwt, std::vector<int64_t>& counts, Interval I);
     
 public:
     
@@ -109,7 +109,7 @@ template<class t_bitvector>
 const uint8_t Basic_BWT<t_bitvector>::END;
 
 template<class t_bitvector>
-void Basic_BWT<t_bitvector>::count_smaller_chars(const sdsl::wt_huff<t_bitvector>& bwt,
+void Basic_BWT<t_bitvector>::count_smaller_chars(const sdsl::wt_hutu<t_bitvector>& bwt,
                                                     std::vector<int64_t>& counts, Interval I){
     assert(alphabet.size() != 0);
     for(int64_t i = 0; i < (int64_t)alphabet.size(); i++) counts[alphabet[i]] = 0;
