@@ -36,7 +36,6 @@ public:
         
         Full_Topology_Mapper mapper(rev_st_bpr);
         
-        
         sdsl::bit_vector rev_st_maximal_marks_sdsl = get_rev_st_maximal_marks(index, rev_st_bpr->size(), mapper);
         std::shared_ptr<Basic_bitvector> rev_st_maximal_marks = make_shared<Basic_bitvector>(rev_st_maximal_marks_sdsl);
         rev_st_maximal_marks->init_rank_support();
@@ -45,16 +44,19 @@ public:
         std::shared_ptr<Basic_bitvector> slt_maximal_marks = make_shared<Basic_bitvector>(slt_maximal_marks_sdsl);
         slt_maximal_marks->init_select_support();
         
-        String_Depth_Support SDS(rev_st_bpr,
+        String_Depth_Support_SLT SDS_SLT(rev_st_bpr,
                                  slt_bpr,
                                  rev_st_maximal_marks,
                                  slt_maximal_marks);
+        
+        std::shared_ptr<sdsl::int_vector<0>> stored = make_shared<sdsl::int_vector<0>>(get_all_rev_st_maxrep_string_depths(index));
+        String_Depth_Support_Store_All SDS_SA(stored,rev_st_maximal_marks);
         
         // Do the testing
         
         std::vector<std::pair<std::string, Interval_pair> > maxreps = find_maxreps(index); // For reference
         
-        int64_t nmarked = SDS.rev_st_maximal_marks->rank(rev_st_bpr->size());
+        int64_t nmarked = rev_st_maximal_marks->rank(rev_st_bpr->size());
         
         assert(nmarked == maxreps.size());
         
@@ -62,7 +64,8 @@ public:
             string label = rep.first;
             Interval_pair IP = rep.second;
             int64_t open = enclose_leaves(IP.reverse.left, IP.reverse.right, rev_st_bpr->ss_10, rev_st_bpr->bps).left;
-            assert(SDS.string_depth(open) == label.size());
+            assert(SDS_SLT.string_depth(open) == label.size());
+            assert(SDS_SA.string_depth(open) == label.size());
         }
         
         //cout << "String depth test OK" << endl;

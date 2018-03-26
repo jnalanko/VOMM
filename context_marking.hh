@@ -41,8 +41,8 @@ public:
     }
 
     void write_depths(int64_t stringdepth, int64_t open_paren){
-        assert(G != nullptr);
         if(enabled){
+        assert(G != nullptr);
             outfile << stringdepth << " " << G->rev_st_bpr->excess(open_paren) - 1 << " ";
         }
     }

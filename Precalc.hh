@@ -150,7 +150,7 @@ public:
 };
 
 class SLT_Maximal_Marks_Callback : public Iterator_Callback{
-  
+    
 public:
     
     sdsl::bit_vector marks;
@@ -175,6 +175,53 @@ public:
     
     sdsl::bit_vector get_result(){
         return marks;
+    }
+};
+
+class Store_Depths_Callback : public Iterator_Callback{
+// Needs a left-to-right DFS traversal
+public:
+    
+    vector<int64_t> depths;
+    int64_t maxreps_seen;
+    int64_t maxdepth;
+    bool enabled;
+    
+    void init(){
+        maxreps_seen = 0;
+        maxdepth = 0;
+        enabled = true;
+    }
+    
+    void enable(){ enabled = true;}
+    void disable(){ enabled = false;}
+    
+    virtual void callback(const Iterator::Stack_frame& top){
+        if(!enabled) return;
+        if(top.is_maxrep){
+            depths.push_back(top.depth);
+            maxdepth = max(maxdepth, top.depth);
+            maxreps_seen++;
+        }
+    }
+    
+    virtual void finish(){
+        if(!enabled) return;
+    }
+    
+    sdsl::int_vector<0> get_result(){
+        if(!enabled){
+            // Return empty vector
+            // Set width to 1 in case width 0 is forbidden
+            sdsl::int_vector<0> empty(0,0,1);
+            return empty;
+        } else{
+            sdsl::int_vector<0> v(depths.size(), 0, bits::hi(maxdepth)+1);
+            for(int64_t i = 0; i < depths.size(); i++){
+                v[i] = depths[i];
+            }
+            return v;
+        }
     }
 };
 
@@ -259,17 +306,13 @@ sdsl::bit_vector get_slt_maximal_marks(BIBWT& index, sdsl::bit_vector& slt_bpr){
 }
 
 
-template <typename bwt_t, typename mapper_t>
-std::vector<int64_t> get_all_rev_st_string_depths(bwt_t& index, int64_t rev_st_bpr_length, Iterator& it, mapper_t mapper){
-    (void)index;
-    vector<int64_t> v(rev_st_bpr_length);
-    it.init();
-    while(it.next()){
-        int64_t depth = it.get_top().depth;
-        assert(depth > 0); // Full iterator does not know depths and so returns -1 for all.
-        v[mapper.leaves_to_node(it.get_top().intervals.reverse)] = depth;
-    }
-    return v;
+template <typename bwt_t>
+sdsl::int_vector<0> get_all_rev_st_maxrep_string_depths(bwt_t& index){
+    SLT_Iterator it(&index);
+    Store_Depths_Callback cb;
+    cb.init();
+    iterate_with_callbacks(it, &cb);
+    return cb.get_result();
 }
 
 #endif

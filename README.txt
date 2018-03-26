@@ -77,6 +77,13 @@ Full list of flags:
 --four-thresholds [float tau1] [float tau2] [float tau3] [float tau4]
     Use the context formula with the four thresholds tau1,tau2,tau3,tau4
     
+--store-depths
+    Stores the string depth of every maximal repeat as binary integers into
+    outputdir + "/" + filename_prefix + ".string_depths". The binary
+    representation has length that is just enough to store the largest depth.
+    The file is created even if the option is not enabled, but in that case
+    it will be very small.
+
 --context-stats
     Computes statistics on the contexts. Writes two files 
     into the model directory:
@@ -89,7 +96,7 @@ Full list of flags:
        against the threshold. In case of --four-thresholds, there are three 
        values corresponding to equations 2,3 and 4 in the paper A 
        Framework for Space-Efficient String Kernels.
-
+     
     
 If there is a problem with some of the flags maybe I updated the flags but forgot
 to update this documentation, or maybe I typoed something. In this case please check

@@ -73,13 +73,14 @@ public:
     string outputdir;
     string input_filename;
     bool run_length_encoding;
+    bool store_depths;
     
     Context_Callback* cf;
     
     Iterator* rev_st_it;
     Iterator* slt_it;
     
-    Build_Time_Config() : context_stats(false), only_maxreps(false), depth_bound(HUGE_NUMBER), context_type(UNDEFINED), run_length_encoding(false), 
+    Build_Time_Config() : context_stats(false), only_maxreps(false), depth_bound(HUGE_NUMBER), context_type(UNDEFINED), run_length_encoding(false), store_depths(false),
                           cf(nullptr), rev_st_it(nullptr), slt_it(nullptr) {}
     
     ~Build_Time_Config(){
@@ -189,8 +190,9 @@ int build_model_main(int argc, char** argv){
             C.outputdir = dir;
         } else if(argv[i] == string("--context-stats")){
             C.context_stats = true;
-        }
-        else{
+        } else if(argv[i] == string("--store-depths")){
+            C.store_depths = true;
+        } else{
             cerr << "Invalid argument: " << argv[i] << endl;
             return -1;
         }
@@ -211,7 +213,7 @@ int build_model_main(int argc, char** argv){
     if(C.context_stats){
         wr.set_file(C.outputdir + "/stats.depths_and_scores.txt");
     }
-    build_model(G, reference, *C.cf, *C.slt_it, *C.rev_st_it, C.run_length_encoding, false, wr);
+    build_model(G, reference, *C.cf, *C.slt_it, *C.rev_st_it, C.run_length_encoding, C.store_depths, wr);
     if(C.context_stats){ 
         write_context_summary(G, C.cf->get_number_of_candidates(), C.outputdir + "/stats.context_summary.txt");
     }

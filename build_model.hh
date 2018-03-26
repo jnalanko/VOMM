@@ -80,10 +80,17 @@ void build_model(Global_Data& G, string& T, Context_Callback& context_formula,
     write_log("Marking maximal repeats and contexts");
     Rev_ST_Maximal_Marks_Callback revstmmcb;
     SLT_Maximal_Marks_Callback sltmmcb;
+    Store_Depths_Callback sdcb;
+    
     revstmmcb.init(*G.bibwt, G.rev_st_bpr->size(), mapper);
     sltmmcb.init(*G.bibwt, sdsl_slt_bpr);
     context_formula.init(G.bibwt.get(), G.rev_st_bpr->size(), mapper, &wr);
-    vector<Iterator_Callback*> marking_callbacks = {&revstmmcb, &sltmmcb, &context_formula};
+    sdcb.init();
+    
+    if(compute_string_depths) sdcb.enable();
+    else sdcb.disable();
+    
+    vector<Iterator_Callback*> marking_callbacks = {&sdcb, &revstmmcb, &sltmmcb, &context_formula};
     iterate_with_callbacks(slt_it, marking_callbacks);
     
     G.rev_st_maximal_marks = std::shared_ptr<Bitvector>(new Basic_bitvector(revstmmcb.get_result()));
@@ -92,6 +99,8 @@ void build_model(Global_Data& G, string& T, Context_Callback& context_formula,
     G.rev_st_context_marks = std::shared_ptr<Bitvector>(new Basic_bitvector(context_formula.get_result()));
     G.rev_st_context_marks->init_rank_support();
     G.rev_st_context_marks->init_select_support();
+    
+    G.string_depths = std::shared_ptr<sdsl::int_vector<0>>(new sdsl::int_vector<0>(sdcb.get_result()));
 
     sdsl::bit_vector sdsl_slt_maxreps = sltmmcb.get_result();
     if(run_length_coding){
@@ -106,12 +115,6 @@ void build_model(Global_Data& G, string& T, Context_Callback& context_formula,
     write_log("Building the BPR of contexts only");
     G.rev_st_bpr_context_only = std::shared_ptr<Bitvector>(new Basic_bitvector(get_rev_st_bpr_context_only(&G)));
     G.rev_st_bpr_context_only->init_bps_support();
-    
-    if(compute_string_depths){
-        cerr << "Not implemented error: compute string depths" << endl;
-        throw(std::runtime_error("Not implemented error: compute string depths"));
-        //G.string_depths = CA.get_rev_st_string_depths(G.bibwt, G.rev_st_bpr.size(), mapper);
-    }
     
     // Store reverse BWT for scoring. Todo: reuse already computed bibwt
     

@@ -17,7 +17,10 @@ int main(int argc, char** argv){
     (void) argc; (void) argv; // Silence unused variable compiler warning
 
     disable_logging();
-    
+
+    String_Depth_Support_tests();
+    test_precomputed_depths();
+    test_serialization();
     test_recursive_scoring();
     score_string_tests();    
     
@@ -30,10 +33,8 @@ int main(int argc, char** argv){
     test_maxrep_rev_st_bpr_building();
     test_maxrep_depth_bounded_rev_st_bpr_building();
     Maxreps_tests();
-    test_serialization();
     test_RLE();
     LMA_Support_Tests();
-    String_Depth_Support_tests();
     MS_Enumerator_tests();
     Parent_Support_Tests();
 

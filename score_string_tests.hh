@@ -160,7 +160,7 @@ void test_serialization(){
     Rev_ST_Maxrep_Iterator rev_slt_it;
     Entropy_Formula formula(threshold);
     Global_Data G1;
-    build_model(G1, T, formula, slt_it, rev_slt_it, true, false);
+    build_model(G1, T, formula, slt_it, rev_slt_it, true, rand() % 2);
     G1.store_all_to_disk("models","test");
     Global_Data G2;
     G2.load_all_from_disk("models","test",true);
@@ -170,8 +170,33 @@ void test_serialization(){
     assert(score_string(S, G2, scorer, updater) == score_string_entropy_brute(S,T,threshold,escape_prob));
 }
 
+void test_precomputed_depths(){
+    cerr << "Running precomputed depths tests" << endl;
+    
+    srand(1337);
+    for(int64_t i = 0; i < 100; i++){
+        string S = get_random_string(100,3);
+        string T = get_random_string(100,3);
+        double threshold = rand() / (double)RAND_MAX;
+        double escape = rand() / (double)RAND_MAX;
+        
+        SLT_Iterator slt_it;
+        Rev_ST_Depth_Bounded_Maxrep_Iterator rev_slt_it(1e18);
+        
+        Entropy_Formula formula(threshold);
+        Global_Data G;
+        build_model(G, T, formula, slt_it, rev_slt_it, true, true);
+        Basic_Scorer scorer(escape, true);
+        Maxrep_Pruned_Updater updater;
+        
+        double brute = score_string_entropy_brute(S,T,threshold,escape);
+        double nonbrute = score_string(S, G, scorer, updater);
+        assert(abs(brute - nonbrute) < 1e-6);
+    }
+}
+
 void test_RLE(){
-    cerr << "Running RLE tests" << endl;
+    cerr << "Running precomputed depths tests" << endl;
     
     srand(1412341);
     string T = get_random_string(300,3);

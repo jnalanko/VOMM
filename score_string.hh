@@ -41,20 +41,19 @@ sdsl::bit_vector get_rev_st_bpr_context_only(Global_Data* G){ // Todo: move to p
     return rev_st_bpr_context_only;
 }
 
-template<typename String_Depth_Support_t, typename Parent_Support_t, typename LMA_Support_t>
 class Topology_Algorithms : public Topology{
 
 public:
 
     Global_Data* data; // Todo: maybe don't need to store this pointer
     Topology_Mapper* mapper;
-    Parent_Support_t PS;
-    String_Depth_Support_t SDS;
-    LMA_Support_t LMAS;
+    Parent_Support PS;
+    String_Depth_Support* SDS;
+    LMA_Support LMAS;
 
     typedef int64_t node_t;
     
-    Topology_Algorithms(Global_Data* data, Topology_Mapper* mapper, String_Depth_Support_t SDS, Parent_Support_t PS, LMA_Support_t LMAS) :
+    Topology_Algorithms(Global_Data* data, Topology_Mapper* mapper, String_Depth_Support* SDS, Parent_Support PS, LMA_Support LMAS) :
         data(data),
         mapper(mapper),
         PS(PS),
@@ -64,7 +63,7 @@ public:
 
     // Operations in topology:
     int64_t rev_st_string_depth(node_t node){
-        return SDS.string_depth(node);
+        return SDS->string_depth(node);
     }
     
     node_t rev_st_parent(node_t node){
@@ -116,13 +115,14 @@ template<> void init_support<Parent_Support>(Parent_Support& PS, Global_Data* G)
     PS = Parent_Support(G->rev_st_bpr);
 }
 
+/*
 template<> void init_support<String_Depth_Support>(String_Depth_Support& SDS, Global_Data* G){
     SDS = String_Depth_Support(G->rev_st_bpr,G->slt_bpr,G->rev_st_maximal_marks,G->slt_maximal_marks);
 }
 
 template<> void init_support<String_Depth_Support_Store_All>(String_Depth_Support_Store_All& SDS, Global_Data* G){
-    SDS = String_Depth_Support_Store_All(&G->string_depths);
-}
+    SDS = String_Depth_Support_Store_All(G->string_depths, G->rev_st_maximal_marks);
+}*/
 
 template<> void init_support<Full_Topology_Mapper>(Full_Topology_Mapper& mapper, Global_Data* G){
     mapper = Full_Topology_Mapper(G->rev_st_bpr);
@@ -335,26 +335,29 @@ public:
 
 // Input stream must have a function getchar(char& c), which returns
 // false it the end of the stream was reached
-template <typename index_t = BD_BWT_index<>,
-typename String_Depth_Support_t = String_Depth_Support,
-typename Parent_Support_t = Parent_Support,
-typename LMA_Support_t = LMA_Support,
-typename input_stream_t>
+template <typename input_stream_t>
 double score_string(input_stream_t& S, Global_Data& G, Scoring_Function& scorer, Loop_Invariant_Updater& updater){
     
     assert(G.revbwt != nullptr);
     Pruned_Topology_Mapper mapper; // Also works for non-pruned topology
     init_support(mapper, &G);
     
-    String_Depth_Support_t SDS;
-    Parent_Support_t PS;
-    LMA_Support_t LMAS;
+    std::shared_ptr<String_Depth_Support> SDS;
+    if(G.string_depths->size() == 0){
+        write_log("Loading SLT-based string depth support");
+        SDS = make_shared<String_Depth_Support_SLT>(G.rev_st_bpr,G.slt_bpr,G.rev_st_maximal_marks,G.slt_maximal_marks);
+    } else{
+        write_log("Loading stored string depths for maxreps");
+        SDS = make_shared<String_Depth_Support_Store_All>(G.string_depths, G.rev_st_maximal_marks);
+    }
     
-    init_support<String_Depth_Support_t>(SDS, &G);
-    init_support<Parent_Support_t>(PS, &G);
-    init_support<LMA_Support_t>(LMAS, &G);
+    Parent_Support PS;
+    LMA_Support LMAS;
     
-    Topology_Algorithms<String_Depth_Support,Parent_Support,LMA_Support> topology(&G, &mapper, SDS, PS, LMAS);
+    init_support<Parent_Support>(PS, &G);
+    init_support<LMA_Support>(LMAS, &G);
+    
+    Topology_Algorithms topology(&G, &mapper, SDS.get(), PS, LMAS);
     
     return main_loop(S,G,topology,scorer,updater);
 }
@@ -386,7 +389,7 @@ template <typename index_t = BD_BWT_index<>,
 double score_string(string& S, Global_Data& G, Scoring_Function& scorer, Loop_Invariant_Updater& updater){
 
     Input_Stream is(S);
-    return score_string<index_t, String_Depth_Support_t, Parent_Support_t, LMA_Support_t, Input_Stream>(is,G,scorer,updater);
+    return score_string<Input_Stream>(is,G,scorer,updater);
 }
 
 int score_string_main(int argc, char** argv);

@@ -29,9 +29,9 @@ public:
     virtual bool at(int64_t i) = 0; // The same as operator []
     
     // Rank and select. Only work after initialization
-    virtual int64_t rank(int64_t pos) = 0;
+    virtual int64_t rank(int64_t pos) = 0; // Number of ones in [0, pos)
     virtual int64_t rank_10(int64_t pos) = 0;
-    virtual int64_t select(int64_t rank) = 0;
+    virtual int64_t select(int64_t rank) = 0; // rank \in {1,...,size}
     virtual int64_t select_10(int64_t pos) = 0;
     
     // Balanced parentheses operations. Only work after bps initialization
@@ -211,6 +211,11 @@ public:
     virtual int64_t size() = 0;
     virtual void free_memory() = 0;
     
+};
+
+class String_Depth_Support{
+public:
+    virtual int64_t string_depth(int64_t open) = 0;
 };
 
 /*

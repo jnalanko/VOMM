@@ -21,10 +21,10 @@ using namespace std;
 
 // 1 represents an open parenthesis, 0 a closed parenthesis
 // This class should contain only pointer data members, so it can be copied easily
-class String_Depth_Support{
+class String_Depth_Support_SLT : public String_Depth_Support{
     public:
-    String_Depth_Support() {};
-    String_Depth_Support(std::shared_ptr<Bitvector> rev_st_bpr, 
+    String_Depth_Support_SLT() {};
+    String_Depth_Support_SLT(std::shared_ptr<Bitvector> rev_st_bpr,
                          std::shared_ptr<Bitvector> slt_bpr, 
                          std::shared_ptr<Bitvector> rev_st_maximal_marks,
                          std::shared_ptr<Bitvector> slt_maximal_marks)
@@ -39,7 +39,7 @@ class String_Depth_Support{
     std::shared_ptr<Bitvector> rev_st_maximal_marks;
     std::shared_ptr<Bitvector> slt_maximal_marks;
     
-    int64_t string_depth(int64_t open){
+    virtual int64_t string_depth(int64_t open){
         assert(rev_st_maximal_marks->at(open) == 1); // Only works for maxreps
         return slt_tree_depth(preorder_rank_to_slt_bpr(rev_st_bpr_to_preorder_rank(open)));
     }
@@ -63,17 +63,21 @@ class String_Depth_Support{
         
 };
 
-class String_Depth_Support_Store_All{
+class String_Depth_Support_Store_All : public String_Depth_Support{
     
     public:
     
-    std::vector<int64_t>* depths;
+    std::shared_ptr<sdsl::int_vector<0>> depths;
+    std::shared_ptr<Bitvector> rev_st_maximal_marks;
     
     String_Depth_Support_Store_All() {}
-    String_Depth_Support_Store_All(vector<int64_t>* depths) : depths(depths) {}
+    String_Depth_Support_Store_All(std::shared_ptr<sdsl::int_vector<0>> depths, std::shared_ptr<Bitvector> rev_st_maximal_marks) : depths(depths), rev_st_maximal_marks(rev_st_maximal_marks){}
     
-    int64_t string_depth(int64_t open_paren){
-        return (*depths)[open_paren];
+    virtual int64_t string_depth(int64_t open_paren){
+        // Only works for maxreps
+        assert(rev_st_maximal_marks->at(open_paren) == 1);
+        int64_t idx = rev_st_maximal_marks->rank(open_paren);
+        return (*depths)[idx];
     }
 };
 

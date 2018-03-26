@@ -41,7 +41,7 @@ class Global_Data {
     std::shared_ptr<BIBWT> bibwt; // Used for construction and reconstruction
     std::unique_ptr<BWT> revbwt; // Constructed during build time, used during scoring time.
 
-    std::vector<int64_t> string_depths; // Built only if used
+    std::shared_ptr<sdsl::int_vector<0>> string_depths; // Built only if used
 
     Global_Data() {}
 
@@ -57,7 +57,6 @@ class Global_Data {
         return ss.str();
     }
 
-    // DOES NOT STORE string_depths!
     void store_all_to_disk(string directory, string filename_prefix) {
         revbwt->save_to_disk(directory, filename_prefix + ".rev_bwt");
         bibwt->save_to_disk(directory, filename_prefix + ".bibwt");
@@ -70,9 +69,10 @@ class Global_Data {
         rev_st_context_marks->serialize(directory + "/" + filename_prefix + ".rev_st_context_marks");
         pruning_marks->serialize(directory + "/" + filename_prefix + ".pruning_marks");
         
+        store_to_file(*string_depths, directory + "/" + filename_prefix + ".string_depths");
+        
     }
 
-    // DOES NOT STORE string_depths!
     void load_all_from_disk(string directory, string filename_prefix, bool run_length_coding, bool load_bibwt = false) {
 
         if(load_bibwt){
@@ -99,6 +99,7 @@ class Global_Data {
         rev_st_bpr_context_only = shared_ptr<Basic_bitvector>(new Basic_bitvector());
         rev_st_maximal_marks = shared_ptr<Basic_bitvector>(new Basic_bitvector());
         rev_st_context_marks = shared_ptr<Basic_bitvector>(new Basic_bitvector());
+        string_depths = shared_ptr<sdsl::int_vector<0>>(new sdsl::int_vector<0>());
         
         revbwt->load_from_disk(directory, filename_prefix + ".rev_bwt");
         
@@ -109,7 +110,8 @@ class Global_Data {
         slt_maximal_marks->load(directory + "/" + filename_prefix + ".slt_maximal_marks");
         rev_st_context_marks->load(directory + "/" + filename_prefix + ".rev_st_context_marks");
         pruning_marks->load(directory + "/" + filename_prefix + ".pruning_marks");
-
+        
+        load_from_file(*string_depths, directory + "/" + filename_prefix + ".string_depths");
     }
 
 };
