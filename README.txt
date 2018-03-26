@@ -78,8 +78,8 @@ Full list of flags:
     Use the context formula with the four thresholds tau1,tau2,tau3,tau4
     
 --store-depths
-    Stores the string depth of every maximal repeat as binary integers into
-    outputdir + "/" + filename_prefix + ".string_depths". The binary
+    Stores the string depth of every maximal repeat in the topology as binary 
+    integers into outputdir + "/" + filename_prefix + ".string_depths". The binary
     representation has length that is just enough to store the largest depth.
     The file is created even if the option is not enabled, but in that case
     it will be very small.
