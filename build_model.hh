@@ -63,32 +63,47 @@ void build_model(Global_Data& G, string& T, Context_Callback& context_formula,
     
     Pruned_Topology_Mapper mapper(G.rev_st_bpr, G.pruning_marks);
     
-    write_log("Building SLT BPR");
+    sdsl::bit_vector sdsl_slt_bpr; // Assigned to later if compute_string_depths is false
+    
+    if(!compute_string_depths) write_log("Building SLT BPR");
     Build_SLT_BPR_Callback sltbprcb;
+    
+    if(compute_string_depths) sltbprcb.disable();
+    else sltbprcb.enable();
+    
     sltbprcb.init(*G.bibwt);
     iterate_with_callbacks(slt_it, &sltbprcb);
-    sdsl::bit_vector sdsl_slt_bpr = sltbprcb.get_result();
+    sdsl_slt_bpr = sltbprcb.get_result(); // Returns empty if disabled
+    
     if(run_length_coding){
-        write_log("Run length coding SLT BPR");
-        G.slt_bpr = std::shared_ptr<Bitvector>(new RLE_bitvector(sdsl_slt_bpr));
+        if(!compute_string_depths) write_log("Run length coding SLT BPR");
+        G.slt_bpr = make_shared<RLE_bitvector>(sdsl_slt_bpr);
     } else{
-        G.slt_bpr = std::shared_ptr<Bitvector>(new Basic_bitvector(sdsl_slt_bpr));
+        G.slt_bpr = make_shared<Basic_bitvector>(sdsl_slt_bpr);
     }
+    
     G.slt_bpr->init_rank_support();
     
     wr.set_data(&G);
-    write_log("Marking maximal repeats and contexts");
+    if(compute_string_depths) write_log("Marking contexts and storing string depths of maxreps");
+    else write_log("Marking contexts and maxreps");
+    
     Rev_ST_Maximal_Marks_Callback revstmmcb;
     SLT_Maximal_Marks_Callback sltmmcb;
     Store_Depths_Callback sdcb;
+    
+    if(compute_string_depths) {
+        sdcb.enable();
+        sltmmcb.disable();
+    } else {
+        sdcb.disable();
+        sltmmcb.enable();
+    }
     
     revstmmcb.init(*G.bibwt, G.rev_st_bpr->size(), mapper);
     sltmmcb.init(*G.bibwt, sdsl_slt_bpr);
     context_formula.init(G.bibwt.get(), G.rev_st_bpr->size(), mapper, &wr);
     sdcb.init();
-    
-    if(compute_string_depths) sdcb.enable();
-    else sdcb.disable();
     
     vector<Iterator_Callback*> marking_callbacks = {&sdcb, &revstmmcb, &sltmmcb, &context_formula};
     iterate_with_callbacks(slt_it, marking_callbacks);
@@ -104,7 +119,7 @@ void build_model(Global_Data& G, string& T, Context_Callback& context_formula,
 
     sdsl::bit_vector sdsl_slt_maxreps = sltmmcb.get_result();
     if(run_length_coding){
-        write_log("Run length coding maximal repeats on SLT BPR");
+        if(!compute_string_depths) write_log("Run length coding maximal repeats on SLT BPR");
         G.slt_maximal_marks = std::shared_ptr<Bitvector>(new RLE_bitvector(sdsl_slt_maxreps));
     } else{
         G.slt_maximal_marks = std::shared_ptr<Bitvector>(new Basic_bitvector(sdsl_slt_maxreps));

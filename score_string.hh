@@ -115,15 +115,6 @@ template<> void init_support<Parent_Support>(Parent_Support& PS, Global_Data* G)
     PS = Parent_Support(G->rev_st_bpr);
 }
 
-/*
-template<> void init_support<String_Depth_Support>(String_Depth_Support& SDS, Global_Data* G){
-    SDS = String_Depth_Support(G->rev_st_bpr,G->slt_bpr,G->rev_st_maximal_marks,G->slt_maximal_marks);
-}
-
-template<> void init_support<String_Depth_Support_Store_All>(String_Depth_Support_Store_All& SDS, Global_Data* G){
-    SDS = String_Depth_Support_Store_All(G->string_depths, G->rev_st_maximal_marks);
-}*/
-
 template<> void init_support<Full_Topology_Mapper>(Full_Topology_Mapper& mapper, Global_Data* G){
     mapper = Full_Topology_Mapper(G->rev_st_bpr);
 }

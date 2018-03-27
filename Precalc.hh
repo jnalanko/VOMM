@@ -48,18 +48,27 @@ public:
     Basic_Counters counters_open;
     Basic_Counters counters_close;
     sdsl::bit_vector bpr_sdsl;
+    bool enabled;
+    
+    Build_SLT_BPR_Callback() : enabled(true) {}
     
     void init(BIBWT& index){
+        if(!enabled) return;
         counters_open.init(index.size());
         counters_close.init(index.size());
     }
     
+    void enable(){ enabled = true;}
+    void disable(){ enabled = false;}
+    
     void callback(const Iterator::Stack_frame& top){
+        if(!enabled) return;
         counters_open.increment(top.intervals.reverse.left);
         counters_close.increment(top.intervals.reverse.right);
     }
     
     void finish(){
+        if(!enabled) return;
         vector<bool> bpr = counters_to_bpr(counters_open, counters_close);
         bpr_sdsl.resize(bpr.size());
         for(int64_t i = 0; i < bpr.size(); i++)
@@ -156,8 +165,15 @@ public:
     sdsl::bit_vector marks;
     sdsl::select_support_mcl<1> slt_bpr_ss;
     int64_t preorder_rank;
+    bool enabled;
+    
+    SLT_Maximal_Marks_Callback() : enabled(true) {}
+    
+    void enable() {enabled = true;}
+    void disable() {enabled = false;}
     
     void init(BIBWT& index, sdsl::bit_vector& slt_bpr){
+        if(!enabled) return;
         (void) index;
         marks = sdsl::bit_vector(slt_bpr.size(),0);
         sdsl::util::init_support(slt_bpr_ss, &slt_bpr);
@@ -165,6 +181,7 @@ public:
     }
     
     virtual void callback(const Iterator::Stack_frame& top){
+        if(!enabled) return;
         preorder_rank++;
         if(top.is_maxrep){ // todo: is_maxrep from the stack frame
             marks[slt_bpr_ss.select(preorder_rank)] = 1;

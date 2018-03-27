@@ -151,23 +151,28 @@ void test_serialization(){
     cerr << "Running serialization tests" << endl;
     
     srand(11112223);
-    string T = get_random_string(300,3);
-    string S = get_random_string(300,3);
-    double threshold = 0.2;
-    double escape_prob = 0.05;
-         
-    SLT_Iterator slt_it;
-    Rev_ST_Maxrep_Iterator rev_slt_it;
-    Entropy_Formula formula(threshold);
-    Global_Data G1;
-    build_model(G1, T, formula, slt_it, rev_slt_it, true, rand() % 2);
-    G1.store_all_to_disk("models","test");
-    Global_Data G2;
-    G2.load_all_from_disk("models","test",true);
     
-    Basic_Scorer scorer(escape_prob, true);
-    Maxrep_Pruned_Updater updater;
-    assert(score_string(S, G2, scorer, updater) == score_string_entropy_brute(S,T,threshold,escape_prob));
+    for(int i = 0; i < 10; i++){
+        string T = get_random_string(300,3);
+        string S = get_random_string(300,3);
+        double threshold = 0.2;
+        double escape_prob = 0.05;
+         
+        SLT_Iterator slt_it;
+        Rev_ST_Maxrep_Iterator rev_slt_it;
+        Entropy_Formula formula(threshold);
+        Global_Data G1;
+        build_model(G1, T, formula, slt_it, rev_slt_it, true, i % 2);
+        G1.store_all_to_disk("models","test");
+        Global_Data G2;
+        G2.load_all_from_disk("models","test",true);
+    
+        Basic_Scorer scorer(escape_prob, true);
+        Maxrep_Pruned_Updater updater;
+        double brute = score_string_entropy_brute(S,T,threshold,escape_prob);
+        double nonbrute = score_string(S, G2, scorer, updater);
+        assert(abs(brute-nonbrute) < 1e-6);
+    }
 }
 
 void test_precomputed_depths(){

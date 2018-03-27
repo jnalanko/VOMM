@@ -51,6 +51,7 @@ public:
 		this->B = B;
 		n = input.size();
 		R = 0;
+        if(n == 0) return;
 
 		auto runs_per_letter_bv = vector<vector<bool> >(256);
 
