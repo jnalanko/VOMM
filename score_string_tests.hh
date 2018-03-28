@@ -152,20 +152,29 @@ void test_serialization(){
     
     srand(11112223);
     
-    for(int i = 0; i < 10; i++){
+    for(int i = 0; i < 50; i++){
         string T = get_random_string(300,3);
         string S = get_random_string(300,3);
         double threshold = 0.2;
         double escape_prob = 0.05;
          
         SLT_Iterator slt_it;
-        Rev_ST_Maxrep_Iterator rev_slt_it;
+        
+        shared_ptr<Iterator> rev_st_it = nullptr;
+        if(rand() % 2){
+            rev_st_it = make_shared<Rev_ST_Iterator>();   
+        } else{
+            rev_st_it = make_shared<Rev_ST_Maxrep_Iterator>();   
+        }
+        
         Entropy_Formula formula(threshold);
         Global_Data G1;
-        build_model(G1, T, formula, slt_it, rev_slt_it, true, i % 2);
+        bool rle = rand()%2;
+        bool storedepth = rand()%2;
+        build_model(G1, T, formula, slt_it, *rev_st_it, rle, storedepth);
         G1.store_all_to_disk("models","test");
         Global_Data G2;
-        G2.load_all_from_disk("models","test",true);
+        G2.load_all_from_disk("models","test", false);
     
         Basic_Scorer scorer(escape_prob, true);
         Maxrep_Pruned_Updater updater;

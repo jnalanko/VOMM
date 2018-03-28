@@ -48,7 +48,13 @@ public:
     virtual void init_select_10_support() = 0;
     virtual void init_bps_support() = 0;
     
+    // Serialize: Writes two files, one to path and one to path + "_info"
+    // The info-file contains on line: first an ascii string describing the
+    // type of the vector, then a space, and then information related to that
+    // particular type.
     virtual void serialize(std::string path) = 0;
+    
+    // Loads the bit vector at 'path' based on the info file written by serialize.
     virtual void load(std::string path) = 0;
     
     virtual std::string toString() = 0;
@@ -83,6 +89,8 @@ public:
     //virtual void compute_interval_data(Interval I, Interval_Data& data) = 0;
     virtual Interval search(Interval I, uint8_t c) = 0;
     virtual Interval search_with_precalc(Interval I, uint8_t c, Interval_Data& D) = 0;
+    
+    // save_to_disk: also write type information to directory + "/" + filename_prefix + "_bwt_info"
     virtual void save_to_disk(std::string directory, std::string filename_prefix) = 0;
     virtual void load_from_disk(std::string directory, std::string filename_prefix) = 0;
     

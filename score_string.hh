@@ -334,11 +334,9 @@ double score_string(input_stream_t& S, Global_Data& G, Scoring_Function& scorer,
     init_support(mapper, &G);
     
     std::shared_ptr<String_Depth_Support> SDS;
-    if(G.string_depths->size() == 0){
-        write_log("Loading SLT-based string depth support");
+    if(G.have_slt()){
         SDS = make_shared<String_Depth_Support_SLT>(G.rev_st_bpr,G.slt_bpr,G.rev_st_maximal_marks,G.slt_maximal_marks);
     } else{
-        write_log("Loading stored string depths for maxreps");
         SDS = make_shared<String_Depth_Support_Store_All>(G.string_depths, G.rev_st_maximal_marks);
     }
     

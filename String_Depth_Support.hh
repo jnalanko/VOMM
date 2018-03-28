@@ -9,7 +9,6 @@
 #include "sdsl/select_support_mcl.hpp"
 #include "sdsl/bp_support_g.hpp"
 #include "sdsl/util.hpp"
-#include "globals.hh"
 #include <string>
 #include <set>
 #include <algorithm>

@@ -44,7 +44,7 @@ public:
         bv.serialize(outfile);
 
         ofstream info(path + "_info");
-        info << have_bps << " " << have_ss_10 << " " << have_rs_10 << " " << have_rs << " " << have_ss << endl;
+        info << "rle " << have_bps << " " << have_ss_10 << " " << have_rs_10 << " " << have_rs << " " << have_ss << endl;
         if(!info.good()){
             cerr << "Error writing to disk: " << path + "_info" << endl;
             exit(-1);
@@ -59,8 +59,9 @@ public:
         ifstream info;
         info.exceptions(ifstream::failbit | ifstream::badbit);
         try{
+            string type;
             info.open(path + "_info");
-            info >> have_bps >> have_ss_10 >> have_rs_10 >> have_rs >> have_ss;
+            info >> type >> have_bps >> have_ss_10 >> have_rs_10 >> have_rs >> have_ss;
             info.close();
         }  catch(ifstream::failure e) {
             cerr << "Error loading data structure from disk: " << path + "_info" << endl;

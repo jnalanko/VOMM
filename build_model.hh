@@ -21,6 +21,13 @@
 #include <vector>
 #include <memory>
 
+bool is_all_ones(sdsl::bit_vector& v){
+    for(int64_t i = 0; i < v.size(); i++){
+        if(v[i] == 0) return false;
+    }
+    return true;
+}
+
 // All components of the model will be stored into G
 // T: reference string
 // context_formula: a callback for context marking
@@ -51,11 +58,16 @@ void build_model(Global_Data& G, string& T, Context_Callback& context_formula,
     G.rev_st_bpr->init_select_10_support();
     G.rev_st_bpr->init_bps_support();
     
-    if(run_length_coding){
-        write_log("Run length coding the pruning marks vector");
-        G.pruning_marks = std::shared_ptr<Bitvector>(new RLE_bitvector(RSTT.pruning_marks));
+    if(is_all_ones(RSTT.pruning_marks)){
+        write_log("Pruning marks is all ones");
+        G.pruning_marks = make_shared<All_Ones_Bitvector>(RSTT.pruning_marks.size());
     } else{
-        G.pruning_marks = std::shared_ptr<Bitvector>(new Basic_bitvector(RSTT.pruning_marks));
+        if(run_length_coding){
+            write_log("Run length coding the pruning marks vector");
+            G.pruning_marks = std::shared_ptr<Bitvector>(new RLE_bitvector(RSTT.pruning_marks));
+        } else{
+            G.pruning_marks = std::shared_ptr<Bitvector>(new Basic_bitvector(RSTT.pruning_marks));
+        }
     }
     
     G.pruning_marks->init_rank_support();
@@ -136,12 +148,14 @@ void build_model(Global_Data& G, string& T, Context_Callback& context_formula,
     string T_reverse(T.rbegin(), T.rend());
     if(run_length_coding){
         write_log("Computing run-length coded reverse BWT (todo: reuse the bibwt)");
-        BWT* bwt = new RLEBWT<>((uint8_t*)T_reverse.c_str());
-        G.revbwt = std::move(std::unique_ptr<BWT>(bwt)); // transfer ownership to G
+        //BWT* bwt = new RLEBWT<>((uint8_t*)T_reverse.c_str());
+        //G.revbwt = std::move(std::unique_ptr<BWT>(bwt)); // transfer ownership to G
+        G.revbwt = make_shared<RLEBWT<>>((uint8_t*)T_reverse.c_str());
     } else{
         write_log("Computing reverse BWT (todo: reuse the bibwt)");
-        BWT* bwt = new Basic_BWT<>((uint8_t*)T_reverse.c_str());
-        G.revbwt = std::move(std::unique_ptr<BWT>(bwt)); // transfer ownership to G
+        //BWT* bwt = new Basic_BWT<>((uint8_t*)T_reverse.c_str());
+        //G.revbwt = std::move(std::unique_ptr<BWT>(bwt)); // transfer ownership to G
+        G.revbwt = make_shared<Basic_BWT<>>((uint8_t*)T_reverse.c_str());
     }
     
     //cout << G.toString() << endl;

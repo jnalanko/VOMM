@@ -233,7 +233,7 @@ public:
             sdsl::int_vector<0> empty(0,0,1);
             return empty;
         } else{
-            sdsl::int_vector<0> v(depths.size(), 0, bits::hi(maxdepth)+1);
+            sdsl::int_vector<0> v(depths.size(), 0, sdsl::bits::hi(maxdepth)+1);
             for(int64_t i = 0; i < depths.size(); i++){
                 v[i] = depths[i];
             }

@@ -11,7 +11,8 @@
 #include "Interfaces.hh"
 #include "prezza/rle_string.h"
 #include <stdexcept>
-
+#include <iostream>
+#include <fstream>
 
 
 template<class t_bitvector = sdsl::bit_vector>
@@ -177,6 +178,13 @@ void RLEBWT<t_bitvector>::save_to_disk(std::string directory, std::string filena
     std::string A = directory + "/" + filename_prefix + "_alphabet.dat";
     if(!sdsl::store_to_file(alphabet_sdsl, A)) {
         throw std::runtime_error("Error writing to disk: " + A);
+    }
+    
+    ofstream info(directory + "/" + filename_prefix + "_bwt_info");
+    info << "rle_bwt" << endl;
+    if(!info.good()){
+        cerr << "Error writing to disk: " << directory + "/" + filename_prefix + "_bwt_info" << endl;
+        exit(-1);
     }
 }
 

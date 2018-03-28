@@ -20,6 +20,7 @@
 #include <stdexcept>
 
 
+
 /*
  * Implements an FM.index for a byte alphabet.
  * All indices and ranks are indexed starting from zero.
@@ -226,6 +227,13 @@ void Basic_BWT<t_bitvector>::save_to_disk(std::string directory, std::string fil
     std::string A = directory + "/" + filename_prefix + "_alphabet.dat";
     if(!sdsl::store_to_file(alphabet_sdsl, A)) {
         throw std::runtime_error("Error writing to disk: " + A);
+    }
+    
+    std::ofstream info(directory + "/" + filename_prefix + "_bwt_info");
+    info << "basic_bwt" << std::endl;
+    if(!info.good()){
+        std::cerr << "Error writing to disk: " << directory + "/" + filename_prefix + "_bwt_info" << std::endl;
+        exit(-1);
     }
 }
 

@@ -10,10 +10,12 @@
 #include "RLEBWT.hh"
 #include "Basic_bitvector.hh"
 #include "RLE_bitvector.hh"
+#include "All_Ones_Bitvector.hh"
 #include <sstream>
 #include <string>
 #include <vector>
 #include <stdexcept>
+#include <memory>
 
 using namespace std;
 
@@ -39,11 +41,16 @@ class Global_Data {
     std::shared_ptr<Bitvector> pruning_marks; // O(n)
 
     std::shared_ptr<BIBWT> bibwt; // Used for construction and reconstruction
-    std::unique_ptr<BWT> revbwt; // Constructed during build time, used during scoring time.
+    std::shared_ptr<BWT> revbwt; // Constructed during build time, used during scoring time.
 
     std::shared_ptr<sdsl::int_vector<0>> string_depths; // Built only if used
 
     Global_Data() {}
+    
+    bool have_slt(){
+        assert(slt_bpr != nullptr);
+        return slt_bpr->size() != 0;
+    }
 
     std::string toString() {
         std::stringstream ss;
@@ -72,37 +79,94 @@ class Global_Data {
         store_to_file(*string_depths, directory + "/" + filename_prefix + ".string_depths");
         
     }
+    
+    void load_bitvector(std::shared_ptr<Bitvector>& destination, string path){
+        string type;
+        ifstream info;
+        info.exceptions(ifstream::failbit | ifstream::badbit);
+        info.open(path + "_info");
+        info >> type;
+        info.close();
+        if(type == "basic"){
+            destination = make_shared<Basic_bitvector>();
+        } else if(type == "rle"){
+            destination = make_shared<RLE_bitvector>();
+        } else if(type == "all-ones"){
+            destination = make_shared<All_Ones_Bitvector>();
+        } else {
+            throw(std::runtime_error("Unknown bit vector type: " + type));    
+        }
+        destination->load(path);
+    }
+    
+    void load_bwt(std::shared_ptr<BWT>& destination, string directory, string filename_prefix){
+        string path = directory + "/" +  filename_prefix + ".rev_bwt";
+        string type;
+        ifstream info;
+        info.exceptions(ifstream::failbit | ifstream::badbit);
+        info.open(path + "_bwt_info");
+        info >> type;
+        info.close();
+        if(type == "basic_bwt"){
+            destination = make_shared<Basic_BWT<>>();
+        } else if(type == "rle_bwt"){
+            destination = make_shared<RLEBWT<>>();            
+        } else{
+            throw(std::runtime_error("Unknown BWT type: " + type));    
+        }
+        destination->load_from_disk(directory, filename_prefix + ".rev_bwt");
+    }
 
-    void load_all_from_disk(string directory, string filename_prefix, bool run_length_coding, bool load_bibwt = false) {
+    void load_all_from_disk(string directory, string filename_prefix, bool load_bibwt) {
 
         if(load_bibwt){
             bibwt = make_shared<BD_BWT_index<>>(); // todo: RLE?
             bibwt->load_from_disk(directory, filename_prefix + ".bibwt");
         }
+        
+        load_bwt(revbwt, directory, filename_prefix);
+        
+        /*
         if(run_length_coding){
             std::unique_ptr<BWT> bwt_object(new RLEBWT<>());
-            revbwt = std::move(bwt_object);
-            
+            revbwt = std::move(bwt_object);*/
+            /*
             slt_bpr = shared_ptr<RLE_bitvector>(new RLE_bitvector());
             slt_maximal_marks = shared_ptr<RLE_bitvector>(new RLE_bitvector());
             pruning_marks = shared_ptr<RLE_bitvector>(new RLE_bitvector());
+            */
+            /*
         } else{
             std::unique_ptr<BWT> bwt_object(new Basic_BWT<>());
             revbwt = std::move(bwt_object);
-            
+            */
+            /*
             slt_bpr = shared_ptr<Basic_bitvector>(new Basic_bitvector());
             slt_maximal_marks = shared_ptr<Basic_bitvector>(new Basic_bitvector());
             pruning_marks = shared_ptr<Basic_bitvector>(new Basic_bitvector());
-        }
+            */
+        /*}*/
         
+        load_bitvector(slt_bpr, directory + "/" + filename_prefix + ".slt_bpr");
+        load_bitvector(rev_st_bpr, directory + "/" + filename_prefix + ".rev_st_bpr");
+        load_bitvector(rev_st_bpr_context_only, directory + "/" + filename_prefix + ".rev_st_bpr_context_only");
+        load_bitvector(rev_st_maximal_marks, directory + "/" + filename_prefix + ".rev_st_maximal_marks");
+        load_bitvector(slt_maximal_marks, directory + "/" + filename_prefix + ".slt_maximal_marks");
+        load_bitvector(rev_st_context_marks, directory + "/" + filename_prefix + ".rev_st_context_marks");
+        load_bitvector(pruning_marks, directory + "/" + filename_prefix + ".pruning_marks");
+        /*
         rev_st_bpr = shared_ptr<Basic_bitvector>(new Basic_bitvector());
         rev_st_bpr_context_only = shared_ptr<Basic_bitvector>(new Basic_bitvector());
         rev_st_maximal_marks = shared_ptr<Basic_bitvector>(new Basic_bitvector());
         rev_st_context_marks = shared_ptr<Basic_bitvector>(new Basic_bitvector());
+        */
+        
         string_depths = shared_ptr<sdsl::int_vector<0>>(new sdsl::int_vector<0>());
+        load_from_file(*string_depths, directory + "/" + filename_prefix + ".string_depths");
         
-        revbwt->load_from_disk(directory, filename_prefix + ".rev_bwt");
+        //revbwt->load_from_disk(directory, filename_prefix + ".rev_bwt");
         
+        /*
         slt_bpr->load(directory + "/" + filename_prefix + ".slt_bpr");
         rev_st_bpr->load(directory + "/" + filename_prefix + ".rev_st_bpr");
         rev_st_bpr_context_only->load(directory + "/" + filename_prefix + ".rev_st_bpr_context_only");
@@ -110,8 +174,8 @@ class Global_Data {
         slt_maximal_marks->load(directory + "/" + filename_prefix + ".slt_maximal_marks");
         rev_st_context_marks->load(directory + "/" + filename_prefix + ".rev_st_context_marks");
         pruning_marks->load(directory + "/" + filename_prefix + ".pruning_marks");
+        */
         
-        load_from_file(*string_depths, directory + "/" + filename_prefix + ".string_depths");
     }
 
 };

@@ -14,6 +14,7 @@
 #include <numeric>
 #include <vector>
 #include "Interfaces.hh"
+#include "globals.hh"
 
 using namespace std;
 
