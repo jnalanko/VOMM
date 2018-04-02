@@ -61,11 +61,14 @@ public:
     string reference_filename;
     bool run_length_coding;
     bool recursive_fallback;
+    int64_t depth_bound;
     
     Scoring_Function* scorer;
     Loop_Invariant_Updater* updater;
     
-    Scoring_Config() : input_mode(Input_Mode::UNDEFINED), only_maxreps(false), context_type(Context_Type::UNDEFINED), escapeprob(-1), run_length_coding(false), recursive_fallback(false), scorer(nullptr), updater(nullptr) {}
+    Scoring_Config() : input_mode(Input_Mode::UNDEFINED), only_maxreps(false), context_type(Context_Type::UNDEFINED), 
+    escapeprob(-1), run_length_coding(false), recursive_fallback(false) , depth_bound(-1), scorer(nullptr), updater(nullptr)
+     {}
     
     ~Scoring_Config(){
         delete scorer;
@@ -81,6 +84,7 @@ public:
         assert(escapeprob != -1);
         assert(scorer != nullptr);
         assert(updater != nullptr);
+        assert(depth_bound != -1);
     }
     
     void load_info_file(){
@@ -89,7 +93,7 @@ public:
         string path = modeldir + "/" + reference_filename + ".info";
         ifstream file(path);
         string ctype;
-        file >> only_maxreps >> ctype >> run_length_coding;
+        file >> only_maxreps >> ctype >> run_length_coding >> depth_bound;
         if(!file.good()){
             cerr << "Error reading file: " << path << endl;
             exit(-1);

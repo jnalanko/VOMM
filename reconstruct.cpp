@@ -53,18 +53,20 @@ public:
     bool context_stats;
     bool only_maxreps;
     bool run_length_coding;
+    int64_t depth_bound;
     
     Context_Callback* cf;
 
     string modeldir;
     string filename;
     
-    Reconstruction_Config() : context_stats(false), only_maxreps(false), run_length_coding(false), cf(nullptr) {}
+    Reconstruction_Config() : context_stats(false), only_maxreps(false), run_length_coding(false), depth_bound(-1), cf(nullptr) {}
     
     void assert_all_ok(){
         assert(modeldir != "");
         assert(filename != "");
         assert(cf != nullptr);
+        assert(depth_bound != -1);
     }
     
     void load_info_file(){
@@ -73,7 +75,7 @@ public:
         string path = modeldir + "/" + filename + ".info";
         ifstream file(path);
         string ctype; // Old context type. Unused
-        file >> only_maxreps >> ctype >> run_length_coding;
+        file >> only_maxreps >> ctype >> run_length_coding >> depth_bound;
         if(!file.good()){
             cerr << "Error reading file: " << path << endl;
             exit(-1);
@@ -135,7 +137,7 @@ int score_string_main(int argc, char** argv){
     G.load_all_from_disk(C.modeldir, C.filename, true);
     write_log("Starting to rebuild contexts");
     
-    SLT_Iterator iterator(G.bibwt.get());
+    Depth_Bounded_SLT_Iterator iterator (G.bibwt.get(), C.depth_bound);
     Pruned_Topology_Mapper mapper(G.rev_st_bpr, G.pruning_marks);
     Stats_writer wr;
     if(C.context_stats){

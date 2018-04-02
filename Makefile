@@ -14,7 +14,7 @@ reconstruct:
 	$(CXX) $(STD) reconstruct.cpp $(libraries) -o reconstruct -Wall -Wno-sign-compare -Wextra $(includes) -g
 	
 reconstruct_optimized:
-	$(CXX) $(STD) reconstruct.cpp $(libraries) -o reconstruct -Wall -Wno-sign-compare -Wextra $(includes) -g
+	$(CXX) $(STD) reconstruct.cpp $(libraries) -o reconstruct_optimized -Wall -Wno-sign-compare -Wextra $(includes) -g -O3
 	
 tests:
 	$(CXX) $(STD) tests.cpp $(libraries) -o tests -Wall -Wno-sign-compare -Wextra $(includes) -g

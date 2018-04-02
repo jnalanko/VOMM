@@ -126,27 +126,6 @@ class Global_Data {
         
         load_bwt(revbwt, directory, filename_prefix);
         
-        /*
-        if(run_length_coding){
-            std::unique_ptr<BWT> bwt_object(new RLEBWT<>());
-            revbwt = std::move(bwt_object);*/
-            /*
-            slt_bpr = shared_ptr<RLE_bitvector>(new RLE_bitvector());
-            slt_maximal_marks = shared_ptr<RLE_bitvector>(new RLE_bitvector());
-            pruning_marks = shared_ptr<RLE_bitvector>(new RLE_bitvector());
-            */
-            /*
-        } else{
-            std::unique_ptr<BWT> bwt_object(new Basic_BWT<>());
-            revbwt = std::move(bwt_object);
-            */
-            /*
-            slt_bpr = shared_ptr<Basic_bitvector>(new Basic_bitvector());
-            slt_maximal_marks = shared_ptr<Basic_bitvector>(new Basic_bitvector());
-            pruning_marks = shared_ptr<Basic_bitvector>(new Basic_bitvector());
-            */
-        /*}*/
-        
         load_bitvector(slt_bpr, directory + "/" + filename_prefix + ".slt_bpr");
         load_bitvector(rev_st_bpr, directory + "/" + filename_prefix + ".rev_st_bpr");
         load_bitvector(rev_st_bpr_context_only, directory + "/" + filename_prefix + ".rev_st_bpr_context_only");
@@ -154,27 +133,9 @@ class Global_Data {
         load_bitvector(slt_maximal_marks, directory + "/" + filename_prefix + ".slt_maximal_marks");
         load_bitvector(rev_st_context_marks, directory + "/" + filename_prefix + ".rev_st_context_marks");
         load_bitvector(pruning_marks, directory + "/" + filename_prefix + ".pruning_marks");
-        /*
-        rev_st_bpr = shared_ptr<Basic_bitvector>(new Basic_bitvector());
-        rev_st_bpr_context_only = shared_ptr<Basic_bitvector>(new Basic_bitvector());
-        rev_st_maximal_marks = shared_ptr<Basic_bitvector>(new Basic_bitvector());
-        rev_st_context_marks = shared_ptr<Basic_bitvector>(new Basic_bitvector());
-        */
         
         string_depths = shared_ptr<sdsl::int_vector<0>>(new sdsl::int_vector<0>());
         load_from_file(*string_depths, directory + "/" + filename_prefix + ".string_depths");
-        
-        //revbwt->load_from_disk(directory, filename_prefix + ".rev_bwt");
-        
-        /*
-        slt_bpr->load(directory + "/" + filename_prefix + ".slt_bpr");
-        rev_st_bpr->load(directory + "/" + filename_prefix + ".rev_st_bpr");
-        rev_st_bpr_context_only->load(directory + "/" + filename_prefix + ".rev_st_bpr_context_only");
-        rev_st_maximal_marks->load(directory + "/" + filename_prefix + ".rev_st_maximal_marks");
-        slt_maximal_marks->load(directory + "/" + filename_prefix + ".slt_maximal_marks");
-        rev_st_context_marks->load(directory + "/" + filename_prefix + ".rev_st_context_marks");
-        pruning_marks->load(directory + "/" + filename_prefix + ".pruning_marks");
-        */
         
     }
 

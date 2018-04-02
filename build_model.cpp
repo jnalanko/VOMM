@@ -24,7 +24,7 @@
 #include "build_model.hh"
 #include "logging.hh"
 
-#define HUGE_NUMBER 1e15
+#define HUGE_NUMBER 1e18
 
 using namespace std;
 
@@ -115,7 +115,7 @@ public:
     void write_to_file(string directory, string filename){
         ofstream file(directory + "/" + filename);
         
-        file << only_maxreps << "\n" << context_type_to_string(context_type) << "\n" << run_length_encoding << "\n";
+        file << only_maxreps << "\n" << context_type_to_string(context_type) << "\n" << run_length_encoding << "\n" << depth_bound << "\n";
         
         if(!file.good()){
             cerr << "Error writing to file " << filename << endl;
