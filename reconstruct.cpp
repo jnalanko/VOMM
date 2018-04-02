@@ -22,6 +22,7 @@
 #include "score_string.hh"
 #include "build_model.hh"
 #include "logging.hh"
+#include "globals.hh"
 
 using namespace std;
 
@@ -131,7 +132,7 @@ int score_string_main(int argc, char** argv){
     
     write_log("Loading the model from " + C.modeldir);
     Global_Data G;
-    G.load_all_from_disk(C.modeldir, C.filename, C.run_length_coding, true);
+    G.load_all_from_disk(C.modeldir, C.filename, true);
     write_log("Starting to rebuild contexts");
     
     SLT_Iterator iterator(G.bibwt.get());

@@ -159,9 +159,9 @@ int main(int argc, char** argv){
     
     write_log("Loading the model from " + C.modeldir);
     Global_Data G;
-    G.load_all_from_disk(C.modeldir, C.reference_filename, C.run_length_coding);
+    G.load_all_from_disk(C.modeldir, C.reference_filename, false);
     write_log("Starting to score ");
-    
+        
     if(C.input_mode == Scoring_Config::Input_Mode::RAW){
         Raw_file_stream rfs(C.query_filename);
         cout << score_string(rfs, G, *C.scorer, *C.updater) << endl;
