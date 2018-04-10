@@ -18,12 +18,11 @@ int main(int argc, char** argv){
 
     disable_logging();
 
+    score_string_tests();
     String_Depth_Support_tests();
     test_precomputed_depths();
     test_serialization();
     test_recursive_scoring();
-    score_string_tests();    
-    
     test_mark_contexts_entropy_all();
     test_mark_contexts_p_norm_all();
     test_mark_contexts_KL_all();

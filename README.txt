@@ -105,7 +105,9 @@ are parsed.
 
 * score_string_optimized
 
-Scores a string given a previously built model with build_model_optimized.
+Scores a string given a previously built model with build_model_optimized. Writes the
+log-probabilities(s) to stdout, one line per query. Writes a log to stderr while it's
+running.
 
 Example:
 

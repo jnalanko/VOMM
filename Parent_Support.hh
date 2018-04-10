@@ -43,6 +43,13 @@ public:
         }
     } 
     
+    int64_t parent(int64_t open){ // Takes a the open parenthesis of an interval
+        if(open == 0) return 0; // Root
+        else{
+            return bpr->enclose(open);
+        }
+    } 
+    
     Interval topology_to_lex(Interval I){ // Takes a topology interval. TODO: DELETE (not the responsibility of this class)
         int64_t left = bpr->rank_10(I.left);
         int64_t right = bpr->rank_10(I.right + 1) - 1;

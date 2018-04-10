@@ -61,13 +61,14 @@ public:
     string reference_filename;
     bool run_length_coding;
     bool recursive_fallback;
+    bool lin_scoring;
     int64_t depth_bound;
     
     Scoring_Function* scorer;
     Loop_Invariant_Updater* updater;
     
     Scoring_Config() : input_mode(Input_Mode::UNDEFINED), only_maxreps(false), context_type(Context_Type::UNDEFINED), 
-    escapeprob(-1), run_length_coding(false), recursive_fallback(false) , depth_bound(-1), scorer(nullptr), updater(nullptr)
+    escapeprob(-1), run_length_coding(false), recursive_fallback(false), lin_scoring(false), depth_bound(-1), scorer(nullptr), updater(nullptr)
      {}
     
     ~Scoring_Config(){
@@ -138,6 +139,8 @@ int main(int argc, char** argv){
             C.escapeprob = stod(argv[i]);
         } else if(argv[i] == string("--recursive-fallback")){
             C.recursive_fallback = true;
+        } else if(argv[i] == string("--lin-scoring")){
+            C.lin_scoring = true;
         } else{
             cerr << "Invalid argument: " << argv[i] << endl;
             return -1;
@@ -168,14 +171,22 @@ int main(int argc, char** argv){
         
     if(C.input_mode == Scoring_Config::Input_Mode::RAW){
         Raw_file_stream rfs(C.query_filename);
-        cout << score_string(rfs, G, *C.scorer, *C.updater) << endl;
+        if(C.lin_scoring){
+            cout << score_string_lin(rfs,G) << endl;
+        } else{
+            cout << score_string(rfs, G, *C.scorer, *C.updater) << endl;
+        }
     }
     
     if(C.input_mode == Scoring_Config::Input_Mode::FASTA){
         FASTA_reader fr(C.query_filename);
         while(!fr.done()){
             Read_stream input = fr.get_next_query_stream();
-            cout << score_string(input, G, *C.scorer, *C.updater) << endl;
+            if(C.lin_scoring){
+                cout << score_string_lin(input,G) << endl;
+            } else{
+                cout << score_string(input, G, *C.scorer, *C.updater) << endl;
+            }
         }
     }
     

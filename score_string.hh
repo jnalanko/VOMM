@@ -324,6 +324,60 @@ public:
 
 };
 
+class Input_Stream{
+// getchar function for a string
+public:
+
+    std::string S;
+    int64_t pos;
+    
+    Input_Stream(string& S) : S(S), pos(0) {}
+    
+    bool getchar(char& c){
+        if(pos == S.size()){
+            return false;
+        } else{
+            c = S[pos];
+            pos++;
+            return true;
+        }
+    }
+};
+
+// Score string using the method from the paper 
+// Probabilistic suffix array: efficient modeling and prediction of protein families
+// by Jie Lin, Donald Adjeroh and Bing-Hua Jiang
+template <typename input_stream_t> 
+double score_string_lin(input_stream_t& S, Global_Data& G){
+    Pruned_Topology_Mapper mapper(G.rev_st_bpr, G.pruning_marks); // Also works for non-pruned topology
+    Parent_Support PS(G.rev_st_bpr);
+    
+    double logprob = 0;
+    Interval I_W(0,G.revbwt->size()-1); // Longest match ending at the current position
+    char c;
+    while(S.getchar(c)){ // TODO: what if c does not appear in S
+        // Compute log-probability of c
+        Interval I_Wc;
+        while(true){
+            if(G.revbwt->search(I_W,c).size() == 0){
+                // c not found
+                int64_t node = mapper.leaves_to_node(I_W); // Map to topology
+                node = PS.parent(node); // Take parent
+                I_W = mapper.node_to_leaves(node); // Map back to revbwt
+            } else{
+                I_Wc = G.revbwt->search(I_W,c);
+                break;
+            }
+        }
+        
+        double numerator = I_Wc.size();
+        double denominator = min(I_W.size(), G.revbwt->size() - 1); // In case of empty string don't want to count in the final dollar
+        logprob += log2(numerator) - log2(denominator);
+        I_W = I_Wc;
+    }
+    return logprob;
+}
+
 // Input stream must have a function getchar(char& c), which returns
 // false it the end of the stream was reached
 template <typename input_stream_t>
@@ -350,26 +404,6 @@ double score_string(input_stream_t& S, Global_Data& G, Scoring_Function& scorer,
     
     return main_loop(S,G,topology,scorer,updater);
 }
-
-class Input_Stream{
-// getchar function for a string
-public:
-
-    std::string S;
-    int64_t pos;
-    
-    Input_Stream(string& S) : S(S), pos(0) {}
-    
-    bool getchar(char& c){
-        if(pos == S.size()){
-            return false;
-        } else{
-            c = S[pos];
-            pos++;
-            return true;
-        }
-    }
-};
 
 template <typename index_t = BD_BWT_index<>,
           typename String_Depth_Support_t = String_Depth_Support,

@@ -81,6 +81,33 @@ double score_string_brute_given_contexts(string S, string T, set<string> context
     return score;   
 }
 
+string longest_match(string& S, set<string> substrings_of_T, int64_t endpos){
+    string M = "";
+    for(int64_t start = endpos; start >= 0; start--){
+        // Try to add one more character to the left of M
+        if(substrings_of_T.find(S[start] + M) == substrings_of_T.end()){
+            return M;
+        }
+        M = S[start] + M;
+    }
+    return M;
+}
+
+double score_string_lin_brute(string& S, string& T){
+    double logprob = 0;
+    set<string> substrings_of_T = get_all_substrings(T);
+    for(int64_t i = 0; i < S.size(); i++){
+        string M = longest_match(S, substrings_of_T, i);
+        if(M.size() == 0){
+            logprob += log2(count_brute(string("") + S[i], T)) - log2(T.size());
+        }
+        else {
+            logprob += log2(count_brute(M,T)) - log2(count_brute(M.substr(0,M.size()-1), T));
+        }
+    }
+    return logprob;
+}
+
 double score_string_entropy_brute(string S, string T, double threshold, double escape_prob){
     vector<string> contexts_vec = get_contexts_entropy_brute(T, threshold);
     set<string> contexts(contexts_vec.begin(), contexts_vec.end());
@@ -131,6 +158,21 @@ double score_string_entropy_non_brute(string S, string T, bool maxreps_only, dou
         return score_string(S, G, scorer, updater);    
     }
     
+}
+
+void test_lin(string S, string T){
+    SLT_Iterator slt_it;
+    Rev_ST_Iterator rev_st_it;
+    
+    Entropy_Formula formula(1); // Any, does not matter
+    Global_Data G;
+    build_model(G, T, formula, slt_it, rev_st_it, false, false);
+    Input_Stream IS(S);
+    
+    double brute = score_string_lin_brute(S, T);
+    double nonbrute = score_string_lin(IS,G);
+    
+    assert(abs(brute - nonbrute) < 1e-6);
 }
 
 void test_entropy(string S, string T, double threshold, double escape){
@@ -280,13 +322,13 @@ void score_string_random_tests(int64_t number){
     for(int64_t i = 0; i < number; i++){
         string S = get_random_string(100,3);
         string T = get_random_string(100,3);
-        //string T = "cacabcbaacbbcaaabacbaabbaaacabccbaaacbaabccbcbabbccaacbbabbaababcbccbcacbbbbcbcbbabcabaaacbbbccabaaa"; // DEBUG
-        //cout << "Testing " << T << endl;
+        S[rand() % S.size()] = 'z'; // Put in a character that is not in T
         double threshold = rand() / (double)RAND_MAX;
         double escape = rand() / (double)RAND_MAX;
         //cout << T << endl;
                 
         test_entropy(S, T, threshold, escape);
+        test_lin(S,T);
         
         // Try depth-bounded entropy scoring
         {
