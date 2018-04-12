@@ -99,7 +99,8 @@ double score_string_lin_brute(string& S, string& T){
     for(int64_t i = 0; i < S.size(); i++){
         string M = longest_match(S, substrings_of_T, i);
         if(M.size() == 0){
-            logprob += log2(count_brute(string("") + S[i], T)) - log2(T.size());
+            // Skip
+            //logprob += log2(count_brute(string("") + S[i], T)) - log2(T.size());
         }
         else {
             logprob += log2(count_brute(M,T)) - log2(count_brute(M.substr(0,M.size()-1), T));
@@ -320,6 +321,7 @@ void score_string_random_tests(int64_t number){
     cerr << "Running random score string tests for all context types" << endl;
     srand(1231231290);
     for(int64_t i = 0; i < number; i++){
+        cout << "Running test " << i << endl;
         string S = get_random_string(100,3);
         string T = get_random_string(100,3);
         S[rand() % S.size()] = 'z'; // Put in a character that is not in T

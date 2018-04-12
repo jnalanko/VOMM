@@ -91,7 +91,9 @@ double main_loop(inputstream_t& S, Global_Data& data, Topology& topo_alg, Scorin
     Interval I(0,data.revbwt->size()-1); // todo: or: index.empty_string()
     int64_t string_depth = 0;
     char c;
+    
     while(S.getchar(c)){
+        
         // Compute log-probability of c
         logprob += scorer.score(I, string_depth, c, topo_alg, *data.revbwt, data);
         
@@ -145,7 +147,7 @@ public:
             node = topology.rev_st_parent(node); // Take parent
             I = topology.node_to_leaves(node); // Map back to colex interval
             parent_taken = true;
-            if(I.size() == 0) break;
+            if(I.size() == index.size()) return {I,0};
         }
         
         if(parent_taken){
@@ -177,7 +179,7 @@ public:
             node = topology.rev_st_parent(node); // Take parent
             I = topology.node_to_leaves(node); // Map back to colex interval
             parent_taken = true;
-            if(I.size() == 0) break;
+            if(I.size() == index.size()) return {I,0};
         }
         
         if(parent_taken){
@@ -212,7 +214,7 @@ public:
             node = topology.rev_st_parent(node); // Take parent
             I = topology.node_to_leaves(node); // Map back to colex interval
             parent_taken = true;
-            if(I.size() == 0) break;
+            if(I.size() == index.size()) return {I,0};
         }
                 
         if(parent_taken){
@@ -361,6 +363,11 @@ double score_string_lin(input_stream_t& S, Global_Data& G){
         while(true){
             if(G.revbwt->search(I_W,c).size() == 0){
                 // c not found
+                if(I_W.size() == G.revbwt->size()){
+                    // Not found anywhere in the index
+                    I_Wc = Interval(-1,-1);
+                    break; 
+                }
                 int64_t node = mapper.leaves_to_node(I_W); // Map to topology
                 node = PS.parent(node); // Take parent
                 I_W = mapper.node_to_leaves(node); // Map back to revbwt
@@ -368,6 +375,10 @@ double score_string_lin(input_stream_t& S, Global_Data& G){
                 I_Wc = G.revbwt->search(I_W,c);
                 break;
             }
+        }
+        
+        if(I_Wc == Interval(-1,-1)){
+            continue; // Skip to next
         }
         
         double numerator = I_Wc.size();
