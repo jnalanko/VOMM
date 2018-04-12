@@ -24,16 +24,16 @@
  */
 
 
-vector<bool> counters_to_bpr(Counters& counters_open, Counters& counters_close){
+vector<bool> counters_to_bpr(Counters& counters){
     
     vector<bool> bpr;
     
     // Build the BPR
-    for(int64_t i = 0; i < counters_close.size(); i++){
-        for(int64_t j = 0; j < counters_open.get(i); j++){
+    for(int64_t i = 0; i < counters.size(); i++){
+        for(int64_t j = 0; j < counters.get_open(i); j++){
             bpr.push_back(1);
         }
-        for(int64_t j = 0; j < counters_close.get(i); j++){
+        for(int64_t j = 0; j < counters.get_close(i); j++){
             bpr.push_back(0);
         }
     }
@@ -45,8 +45,7 @@ class Build_SLT_BPR_Callback : public Iterator_Callback{
   
 public:
     
-    Basic_Counters counters_open;
-    Basic_Counters counters_close;
+    Succinct_Counters counters;
     sdsl::bit_vector bpr_sdsl;
     bool enabled;
     
@@ -54,8 +53,7 @@ public:
     
     void init(BIBWT& index){
         if(!enabled) return;
-        counters_open.init(index.size());
-        counters_close.init(index.size());
+        counters.init(index.size());
     }
     
     void enable(){ enabled = true;}
@@ -63,13 +61,13 @@ public:
     
     void callback(const Iterator::Stack_frame& top){
         if(!enabled) return;
-        counters_open.increment(top.intervals.reverse.left);
-        counters_close.increment(top.intervals.reverse.right);
+        counters.increment_open(top.intervals.reverse.left);
+        counters.increment_close(top.intervals.reverse.right);
     }
     
     void finish(){
         if(!enabled) return;
-        vector<bool> bpr = counters_to_bpr(counters_open, counters_close);
+        vector<bool> bpr = counters_to_bpr(counters);
         bpr_sdsl.resize(bpr.size());
         for(int64_t i = 0; i < bpr.size(); i++)
             bpr_sdsl[i] = bpr[i];
@@ -90,26 +88,24 @@ class Build_REV_ST_BPR_And_Pruning_Callback : public Iterator_Callback{
   
 public:
     
-    Basic_Counters counters_open;
-    Basic_Counters counters_close;
+    Succinct_Counters counters;
     sdsl::bit_vector bpr_sdsl;
     sdsl::bit_vector pruning;
     
     void init(BIBWT& index){
-        counters_open.init(index.size());
-        counters_close.init(index.size());
+        counters.init(index.size());
         pruning = sdsl::bit_vector(index.size(),0);
         
         // Don't know size of bpr_sdsl yet
     }
     
     virtual void callback(const Iterator::Stack_frame& top){
-        counters_open.increment(top.intervals.reverse.left);
-        counters_close.increment(top.intervals.reverse.right);
+        counters.increment_open(top.intervals.reverse.left);
+        counters.increment_close(top.intervals.reverse.right);
     }
     
     virtual void finish(){
-        vector<bool> bpr = counters_to_bpr(counters_open, counters_close);
+        vector<bool> bpr = counters_to_bpr(counters);
         
         // Copy to bpr_sdsl
         bpr_sdsl.resize(bpr.size());
@@ -117,14 +113,13 @@ public:
             bpr_sdsl[i] = bpr[i];
         
         // Compute pruning marks
-        for(int64_t i = 0; i < counters_open.size(); i++){            
-            if(counters_open.get(i) > 0){
+        for(int64_t i = 0; i < counters.size(); i++){            
+            if(counters.get_open(i) > 0){
                 pruning[i] = 1;
             }
         }
         
-        counters_open.free_memory();
-        counters_close.free_memory();
+        counters.free_memory();
     }
     
     Rev_st_topology get_result(){

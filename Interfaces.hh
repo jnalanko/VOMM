@@ -214,8 +214,10 @@ public:
 class Counters{
 public:  
     virtual void init(int64_t size) = 0;
-    virtual void increment(int64_t pos) = 0;
-    virtual int64_t get(int64_t pos) = 0;
+    virtual void increment_open(int64_t pos) = 0;
+    virtual void increment_close(int64_t pos) = 0;
+    virtual int64_t get_open(int64_t pos) = 0;
+    virtual int64_t get_close(int64_t pos) = 0;
     virtual int64_t size() = 0;
     virtual void free_memory() = 0;
     
