@@ -1,6 +1,7 @@
 #ifndef COUNTERS_HH
 #define COUNTERS_HH
 #include "Interfaces.hh"
+#include "logging.hh"
 
 class Basic_Counters : public Counters {
     
@@ -56,7 +57,7 @@ public:
     static const int64_t LEVEL_2_SIZE = 64; // Number of bits of each counter on the second level
     static const int64_t SATURATED = (1 << LEVEL_1_SIZE)-1; // Value indicating overflow to the second level
     
-    int debug = 0;
+    int64_t overflows = 0;
     
     sdsl::int_vector<LEVEL_1_SIZE> v1; // Level 1
     unordered_map<int64_t, int64_t> v2; // Level 2  
@@ -99,7 +100,7 @@ public:
         } else{
             int64_t new_codeword = encode(open+1,close);
             if(new_codeword >= SATURATED){
-                debug++;
+                overflows++;
                 // Overflow to level 2
                 v1[pos] = SATURATED;
                 v2[pos] = encode(open+1,close);
@@ -116,7 +117,7 @@ public:
         } else{
             int64_t new_codeword = encode(open,close+1);
             if(new_codeword >= SATURATED){
-                debug++;
+                overflows++;
                 // Overflow to level 2
                 v1[pos] = SATURATED;
                 v2[pos] = encode(open,close+1);
@@ -144,7 +145,7 @@ public:
     }
     
     virtual void free_memory(){
-        cout << "Overflows: " << debug << endl;
+        write_log("Saturated counters: " + to_string(overflows));
         sdsl::int_vector<LEVEL_1_SIZE>().swap(v1);
         std::unordered_map<int64_t, int64_t>().swap(v2);
         // https://stackoverflow.com/questions/10464992/c-delete-vector-objects-free-memory
