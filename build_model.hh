@@ -145,18 +145,23 @@ void build_model(Global_Data& G, string& T, Context_Callback& context_formula,
     
     // Store reverse BWT for scoring. Todo: reuse already computed bibwt
     
-    string T_reverse(T.rbegin(), T.rend());
-    if(run_length_coding){
-        write_log("Computing run-length coded reverse BWT (todo: reuse the bibwt)");
-        //BWT* bwt = new RLEBWT<>((uint8_t*)T_reverse.c_str());
-        //G.revbwt = std::move(std::unique_ptr<BWT>(bwt)); // transfer ownership to G
-        G.revbwt = make_shared<RLEBWT<>>((uint8_t*)T_reverse.c_str());
-    } else{
-        write_log("Computing reverse BWT (todo: reuse the bibwt)");
-        //BWT* bwt = new Basic_BWT<>((uint8_t*)T_reverse.c_str());
-        //G.revbwt = std::move(std::unique_ptr<BWT>(bwt)); // transfer ownership to G
-        G.revbwt = make_shared<Basic_BWT<>>((uint8_t*)T_reverse.c_str());
+    uint8_t* revbwt = (uint8_t*)malloc(sizeof(uint8_t) * T.size()+1+1); // +1: dollar, +1: null terminator
+    for(int64_t i = 0; i < T.size()+1; i++){
+        revbwt[i] = G.bibwt->backward_bwt_at(i);
     }
+    revbwt[T.size()+1] = 0;
+    
+    if(run_length_coding){
+        write_log("Run length coding the reverse BWT");
+        G.revbwt = make_shared<RLEBWT<>>();
+        G.revbwt->init_from_bwt(revbwt);
+    } else{
+        write_log("Storing the reverse BWT");
+        G.revbwt = make_shared<Basic_BWT<>>();
+        G.revbwt->init_from_bwt(revbwt);
+    }
+    
+    free(revbwt);
     
     //cout << G.toString() << endl;
         

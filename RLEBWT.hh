@@ -36,8 +36,10 @@ public:
     // The input string must not contain the END byte
     static const uint8_t END = 0x01; // End of string marker.
     RLEBWT() {}
-    RLEBWT(const uint8_t* input);
+    //RLEBWT(const uint8_t* input);
     
+    virtual void init_from_text(const uint8_t* input);
+    virtual void init_from_bwt(const uint8_t* bwt);
     uint8_t get_END() const { return END; }
     int64_t size() const { return bwt.size();}
     //uint8_t bwt_at(int64_t index) const { return bwt[index]; }
@@ -123,9 +125,13 @@ int64_t RLEBWT<t_bitvector>::strlen(const uint8_t* str) const{
 }
 
 template<class t_bitvector>
-RLEBWT<t_bitvector>::RLEBWT(const uint8_t* input)
-: global_c_array(256) {
+void RLEBWT<t_bitvector>::init_from_text(const uint8_t* input){
+
     if(*input == 0) throw std::runtime_error("Tried to construct BD_BWT_index for an empty string");
+
+    global_c_array.resize(256);
+    for(int64_t i = 0; i < global_c_array.size(); i++) global_c_array[i] = 0;    
+    
     int64_t n = strlen(input);
     
     if(std::find(input, input+n, END) != input + n){
@@ -146,6 +152,23 @@ RLEBWT<t_bitvector>::RLEBWT(const uint8_t* input)
     this->global_c_array = compute_c_array(data_bwt, n+1);
     
     free(data_bwt);
+    
+}
+
+template<class t_bitvector>
+void RLEBWT<t_bitvector>::init_from_bwt(const uint8_t* input){
+    
+    if(*input == 0) throw std::runtime_error("Tried to construct BD_BWT_index for an empty string");
+
+    global_c_array.resize(256);
+    for(int64_t i = 0; i < global_c_array.size(); i++) global_c_array[i] = 0;    
+
+    std::string cppstring((char*)input); // For rle_string
+    
+    // Run length compression
+    bwt = lzrlbwt::rle_string<>(cppstring);
+    this->alphabet = get_string_alphabet(input);
+    this->global_c_array = compute_c_array(input, strlen(input));
     
 }
 

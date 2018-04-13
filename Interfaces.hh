@@ -82,6 +82,9 @@ public:
         
     };
     
+    
+    virtual void init_from_text(const uint8_t* input) = 0;
+    virtual void init_from_bwt(const uint8_t* bwt) = 0;
     virtual uint8_t get_END() const = 0;
     virtual int64_t size() const = 0;
     virtual const std::vector<int64_t>& get_global_c_array() const = 0;
@@ -130,6 +133,10 @@ public:
     virtual Interval_pair right_extend(Interval_pair intervals, Interval_Data& data, int64_t symbol_index) = 0;
     virtual void save_to_disk(std::string directory, std::string filename_prefix) = 0;
     virtual void load_from_disk(std::string directory, std::string filename_prefix) = 0;
+    
+    virtual uint8_t forward_bwt_at(int64_t index) const = 0;
+    virtual uint8_t backward_bwt_at(int64_t index) const = 0;
+    
     //virtual void save_to_disk_reverse_only(std::string directory, std::string filename_prefix) = 0;
     
     
