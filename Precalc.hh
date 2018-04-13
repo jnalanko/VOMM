@@ -71,6 +71,7 @@ public:
         bpr_sdsl.resize(bpr.size());
         for(int64_t i = 0; i < bpr.size(); i++)
             bpr_sdsl[i] = bpr[i];
+        counters.free_memory();
     }
     
     sdsl::bit_vector get_result(){
