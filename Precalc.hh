@@ -203,11 +203,14 @@ public:
     void init(){
         maxreps_seen = 0;
         maxdepth = 0;
-        enabled = true;
     }
     
-    void enable(){ enabled = true;}
-    void disable(){ enabled = false;}
+    void enable(){
+        enabled = true;
+    }
+    void disable(){ 
+        enabled = false;
+    }
     
     virtual void callback(const Iterator::Stack_frame& top){
         if(!enabled) return;
