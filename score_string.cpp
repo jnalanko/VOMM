@@ -82,7 +82,7 @@ public:
         assert(query_filename != "");
         assert(input_mode != Input_Mode::UNDEFINED);
         assert(context_type != Context_Type::UNDEFINED);
-        assert(escapeprob != -1);
+        if(!lin_scoring) assert(escapeprob != -1);
         assert(scorer != nullptr);
         assert(updater != nullptr);
         assert(depth_bound != -1);
