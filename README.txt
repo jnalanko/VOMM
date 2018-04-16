@@ -28,7 +28,7 @@ make optimized
 
 ---------
 
-There are four three executables:
+There are four executables:
 
 * tests
 
@@ -131,7 +131,11 @@ Full list of flags:
 
 --escapeprob [float prob]
     Escape probability used in scoring.
-    
+
+--lin-scoring
+    Uses the scoring method from the paper "Probabilistic suffix array: 
+    efficient modeling and prediction of protein families" by Lin et al.
+
 If there is a problem with some of the flags maybe I updated the flags but forgot
 to update this documentation, or maybe I typoed something. In this case please check
 the main-function in score_string.cpp to see what the flags really are and how they 
@@ -167,10 +171,3 @@ Full list of flags:
     
 --four-thresholds [float tau1] [float tau2] [float tau3] [float tau4]
     Use the context formula with the four thresholds tau1,tau2,tau3,tau4
-
---lin-scoring
-    Uses the scoring method from the paper "Probabilistic suffix array: 
-    efficient modeling and prediction of protein families" by Lin et al.
-
-
-
