@@ -346,47 +346,61 @@ public:
     }
 };
 
-// Score string using the method from the paper 
-// Probabilistic suffix array: efficient modeling and prediction of protein families
-// by Jie Lin, Donald Adjeroh and Bing-Hua Jiang
-template <typename input_stream_t> 
-double score_string_lin(input_stream_t& S, Global_Data& G){
-    Pruned_Topology_Mapper mapper(G.rev_st_bpr, G.pruning_marks); // Also works for non-pruned topology
-    Parent_Support PS(G.rev_st_bpr);
+/**  
+ * Scores a string S using the simple method described in the paper:
+ *
+ * "Probabilistic suffix array: efficient modeling and prediction of protein families"
+ * by Jie Lin, Donald Adjeroh and Bing-Hua Jiang.
+ *
+ * @return the base-2 logarithm of the total probability of S.
+ */
+template <typename input_stream_t> double score_string_lin(input_stream_t& S, Global_Data& G) {
+    const int64_t BWT_SIZE = G.revbwt->size();
+    const Interval LARGEST_INTERVAL(0,G.revbwt->size()-1);
+    const Interval DUMMY_INTERVAL(-1,-1);
     
-    double logprob = 0;
-    Interval I_W(0,G.revbwt->size()-1); // Longest match ending at the current position
     char c;
-    while(S.getchar(c)){ // TODO: what if c does not appear in S
-        // Compute log-probability of c
-        Interval I_Wc;
-        while(true){
-            if(G.revbwt->search(I_W,c).size() == 0){
-                // c not found
-                if(I_W.size() == G.revbwt->size()){
-                    // Not found anywhere in the index
-                    I_Wc = Interval(-1,-1);
-                    break; 
+    int64_t sizeFrom, sizeTo, node;
+    double logSizeFrom, logSizeTo, out;
+    Pruned_Topology_Mapper mapper(G.rev_st_bpr,G.pruning_marks); // Also works for non-pruned topology
+    Parent_Support PS(G.rev_st_bpr);
+    Interval I_W, I_Wc;
+    
+    out=0.0;
+    I_W=LARGEST_INTERVAL;
+    sizeFrom=BWT_SIZE;
+    logSizeFrom=log2(sizeFrom-1);  // We don't want to count in the final dollar
+    while (S.getchar(c)) {
+        // Finding the BWT interval of the longest suffix of W that is followed by c
+        node=-1;
+        while (true) {
+            I_Wc=G.revbwt->search(I_W,c);
+            sizeTo=I_Wc.size();
+            if (sizeTo==0) {
+                if (sizeFrom==BWT_SIZE) {  // c does not occur in the text
+                    I_Wc=DUMMY_INTERVAL;
+                    break;
                 }
-                int64_t node = mapper.leaves_to_node(I_W); // Map to topology
-                node = PS.parent(node); // Take parent
-                I_W = mapper.node_to_leaves(node); // Map back to revbwt
-            } else{
-                I_Wc = G.revbwt->search(I_W,c);
-                break;
-            }
+                if (node==-1) node=mapper.leaves_to_node(I_W);  // Map to topology
+                node=PS.parent(node);  // Take parent
+                I_W=mapper.node_to_leaves(node);  // Map back to revbwt
+                sizeFrom = I_W.size();
+            } else break;
         }
         
-        if(I_Wc == Interval(-1,-1)){
-            continue; // Skip to next
-        }
+        if (I_Wc==DUMMY_INTERVAL) continue;
+        if(node!=1) logSizeFrom = log2(min(BWT_SIZE-1,sizeFrom));
         
-        double numerator = I_Wc.size();
-        double denominator = min(I_W.size(), G.revbwt->size() - 1); // In case of empty string don't want to count in the final dollar
-        logprob += log2(numerator) - log2(denominator);
-        I_W = I_Wc;
+        // Cumulating the probability
+        logSizeTo=log2(sizeTo);
+        out+=logSizeTo-logSizeFrom;
+        
+        // Next iteration
+        logSizeFrom=logSizeTo;
+        I_W=I_Wc;
+        sizeFrom=sizeTo;
     }
-    return logprob;
+    return out;
 }
 
 // Input stream must have a function getchar(char& c), which returns
