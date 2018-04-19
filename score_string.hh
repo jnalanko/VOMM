@@ -131,22 +131,26 @@ public:
 
     pair<Interval, int64_t> update(Interval I, int64_t d, char c, Global_Data& data, Topology& topology, BWT& index){
         (void) data; // Not needed. Make the compiler happy.
-        bool parent_taken = false;
-        while(index.search(I,c).size() == 0){
-            int64_t node = topology.leaves_to_node(I); // Map to topology
+        bool recalculate_depth = false;
+        Interval I_Wc;
+        int64_t node = -1;
+        while(true){
+            I_Wc = index.search(I,c);
+            if(I_Wc.size() != 0) break;
+            if(node == -1) node = topology.leaves_to_node(I); // Map to topology
             node = topology.rev_st_parent(node); // Take parent
             I = topology.node_to_leaves(node); // Map back to colex interval
-            parent_taken = true;
+            recalculate_depth = true;
             if(I.size() == index.size()) return {I,0};
         }
         
-        if(parent_taken){
+        if(recalculate_depth){
             // Need to recalculate depth
-            assert(data.rev_st_maximal_marks->at(topology.leaves_to_node(I))); // Should be at a maxrep
-            d = topology.rev_st_string_depth(topology.leaves_to_node(I)); // Guaranteed to be at a maxrep
+            assert(data.rev_st_maximal_marks->at(node)); // Should be at a maxrep
+            d = topology.rev_st_string_depth(node); // Guaranteed to be at a maxrep
         }
         
-        return {index.search(I,c), d+1};
+        return {I_Wc, d+1};
     }
 };
 
