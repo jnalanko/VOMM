@@ -166,12 +166,15 @@ void test_lin(string S, string T){
     Rev_ST_Iterator rev_st_it;
     
     Entropy_Formula formula(1); // Any, does not matter
-    Global_Data G;
-    build_model(G, T, formula, slt_it, rev_st_it, false, false);
+    Global_Data G1, G2;
+    build_model(G1, T, formula, slt_it, rev_st_it, false, false);
+    G1.store_all_to_disk("models","test");
+    G2.load_structures_that_lin_scoring_needs("models","test");
+    
     Input_Stream IS(S);
     
     double brute = score_string_lin_brute(S, T);
-    double nonbrute = score_string_lin(IS,G);
+    double nonbrute = score_string_lin(IS,G2);
     
     assert(abs(brute - nonbrute) < 1e-6);
 }

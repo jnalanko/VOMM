@@ -138,6 +138,12 @@ class Global_Data {
         load_from_file(*string_depths, directory + "/" + filename_prefix + ".string_depths");
         
     }
+    
+    void load_structures_that_lin_scoring_needs(string directory, string filename_prefix){
+       load_bwt(revbwt, directory, filename_prefix);
+       load_bitvector(rev_st_bpr, directory + "/" + filename_prefix + ".rev_st_bpr");
+       load_bitvector(pruning_marks, directory + "/" + filename_prefix + ".pruning_marks");
+    }
 
 };
 

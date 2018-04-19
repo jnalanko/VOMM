@@ -166,7 +166,10 @@ int main(int argc, char** argv){
     
     write_log("Loading the model from " + C.modeldir);
     Global_Data G;
-    G.load_all_from_disk(C.modeldir, C.reference_filename, false);
+    if(C.lin_scoring)
+        G.load_structures_that_lin_scoring_needs(C.modeldir, C.reference_filename);
+    else
+        G.load_all_from_disk(C.modeldir, C.reference_filename, false);
     write_log("Starting to score ");
         
     if(C.input_mode == Scoring_Config::Input_Mode::RAW){
