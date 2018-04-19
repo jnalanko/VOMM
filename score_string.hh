@@ -349,7 +349,7 @@ template <typename input_stream_t> double score_string_lin(input_stream_t& S, Gl
         }
         
         if (I_Wc.size() == 0) continue;
-        if(node!=1) logSizeFrom = log2(min(BWT_SIZE-1,sizeFrom));
+        logSizeFrom = log2(min(BWT_SIZE-1,sizeFrom));
         
         // Cumulating the probability
         logSizeTo=log2(sizeTo);
