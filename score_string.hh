@@ -357,7 +357,6 @@ public:
 template <typename input_stream_t> double score_string_lin(input_stream_t& S, Global_Data& G) {
     const int64_t BWT_SIZE = G.revbwt->size();
     const Interval LARGEST_INTERVAL(0,G.revbwt->size()-1);
-    const Interval DUMMY_INTERVAL(-1,-1);
     
     char c;
     int64_t sizeFrom, sizeTo, node;
@@ -377,10 +376,8 @@ template <typename input_stream_t> double score_string_lin(input_stream_t& S, Gl
             I_Wc=G.revbwt->search(I_W,c);
             sizeTo=I_Wc.size();
             if (sizeTo==0) {
-                if (sizeFrom==BWT_SIZE) {  // c does not occur in the text
-                    I_Wc=DUMMY_INTERVAL;
+                if (sizeFrom==BWT_SIZE)   // c does not occur in the text
                     break;
-                }
                 if (node==-1) node=mapper.leaves_to_node(I_W);  // Map to topology
                 node=PS.parent(node);  // Take parent
                 I_W=mapper.node_to_leaves(node);  // Map back to revbwt
@@ -388,7 +385,7 @@ template <typename input_stream_t> double score_string_lin(input_stream_t& S, Gl
             } else break;
         }
         
-        if (I_Wc==DUMMY_INTERVAL) continue;
+        if (I_Wc.size() == 0) continue;
         if(node!=1) logSizeFrom = log2(min(BWT_SIZE-1,sizeFrom));
         
         // Cumulating the probability
