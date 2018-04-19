@@ -348,7 +348,7 @@ void score_string_random_tests(int64_t number){
             build_model(G, T, formula, slt_it, rev_st_it, true, false);
                                 
             Basic_Scorer scorer(escape, true);
-            Maxrep_Depth_Bounded_Updater updater;
+            Maxrep_Pruned_Updater updater;
 
             double non_brute = score_string(S, G, scorer, updater);
             assert(fabs(brute - non_brute) < 1e-6);
@@ -372,7 +372,7 @@ void score_string_random_tests(int64_t number){
             build_model(G, T, formula, slt_it, rev_st_it, true, false);
                 
             Basic_Scorer scorer(escape, false);
-            Maxrep_Depth_Bounded_Updater updater;
+            Maxrep_Pruned_Updater updater;
 
             double non_brute = score_string(S, G, scorer, updater);
             assert(fabs(brute - non_brute) < 1e-6);

@@ -156,7 +156,7 @@ int main(int argc, char** argv){
     }
     
     if(C.only_maxreps){
-        C.updater = new Maxrep_Depth_Bounded_Updater();
+        C.updater = new Maxrep_Pruned_Updater();
     } else{
         // No pruning at all (model can't have depth pruning + no maxrep pruning, checked by assert_all_ok in model buildnig)
         C.updater = new Basic_Updater();

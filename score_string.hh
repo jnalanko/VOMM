@@ -125,53 +125,11 @@ template<> void init_support<Pruned_Topology_Mapper>(Pruned_Topology_Mapper& map
     mapper = Pruned_Topology_Mapper(G->rev_st_bpr, G->pruning_marks);
 }
 
-class Maxrep_Pruned_Updater : public Loop_Invariant_Updater {
-
-public:
-
-    virtual pair<Interval, int64_t> update(Interval I, int64_t d, char c, Global_Data& data, Topology& topology, BWT& index){
-        bool parent_taken = false;
-        bool first_iteration = true;
-        
-        // Take parents until right-extension succeeds
-        while(index.search(I,c).size() == 0){
-            if(first_iteration){
-                // Go up the nearest non-pruned node (maxrep)
-                I = topology.node_to_leaves(topology.leaves_to_node(I));
-                first_iteration = false;
-                parent_taken = true;
-                continue;
-            }
-            
-            int64_t node = topology.leaves_to_node(I); // Map to topology
-            node = topology.rev_st_parent(node); // Take parent
-            I = topology.node_to_leaves(node); // Map back to colex interval
-            parent_taken = true;
-            if(I.size() == index.size()) return {I,0};
-        }
-        
-        if(parent_taken){
-            // Need to recalculate depth
-            int64_t bpr_pos = topology.leaves_to_node(I);
-            if(data.rev_st_maximal_marks->at(bpr_pos)){
-                d = topology.rev_st_string_depth(bpr_pos);
-            } else{
-                int64_t parent = topology.rev_st_parent(bpr_pos);
-                assert(data.rev_st_maximal_marks->at(parent)); // Should be at a maxrep
-                d = topology.rev_st_string_depth(parent) + 1; // One character left-extension of a maxrep
-            }
-            
-        }
-                
-        return {index.search(I,c), d+1};
-    }
-};
-
 class Basic_Updater : public Loop_Invariant_Updater {
 
 public:
 
-    virtual pair<Interval, int64_t> update(Interval I, int64_t d, char c, Global_Data& data, Topology& topology, BWT& index){
+    pair<Interval, int64_t> update(Interval I, int64_t d, char c, Global_Data& data, Topology& topology, BWT& index){
         (void) data; // Not needed. Make the compiler happy.
         bool parent_taken = false;
         while(index.search(I,c).size() == 0){
@@ -194,32 +152,34 @@ public:
 
 
 
-class Maxrep_Depth_Bounded_Updater : public Loop_Invariant_Updater { // The same as non-depth bounded?
+class Maxrep_Pruned_Updater : public Loop_Invariant_Updater { // The same as non-depth bounded?
 
 public:
-    
-    virtual pair<Interval, int64_t> update(Interval I, int64_t d, char c, Global_Data& data, Topology& topology, BWT& index){
-        bool parent_taken = false;
+        
+    pair<Interval, int64_t> update(Interval I, int64_t d, char c, Global_Data& data, Topology& topology, BWT& index){
+        bool recalculate_depth = false;
         bool first_iteration = true;
-        while(index.search(I,c).size() == 0){
+        Interval I_Wc;
+        int64_t node;
+        while(true){
+            I_Wc = index.search(I,c);
+            if(I_Wc.size() != 0) break;
+            if(I.size() == index.size()) return {I,0}; // c not found in the index at all
             if(first_iteration){
-                // Go up the the nearest non-pruned node
-                I = topology.node_to_leaves(topology.leaves_to_node(I));
+                // Go up to the nearest non-pruned node
+                node = topology.leaves_to_node(I);
+                I = topology.node_to_leaves(node);
                 first_iteration = false;
-                parent_taken = true; // Not necessarily true
-                continue;
+            } else{
+                node = topology.rev_st_parent(node); // Take parent
+                I = topology.node_to_leaves(node); // Map back to colex interval
             }
-            
-            int64_t node = topology.leaves_to_node(I); // Map to topology
-            node = topology.rev_st_parent(node); // Take parent
-            I = topology.node_to_leaves(node); // Map back to colex interval
-            parent_taken = true;
-            if(I.size() == index.size()) return {I,0};
+            recalculate_depth = true;
         }
                 
-        if(parent_taken){
+        if(recalculate_depth){
             // Need to recalculate depth
-            int64_t bpr_pos = topology.leaves_to_node(I);
+            int64_t bpr_pos = node;
             if(data.rev_st_maximal_marks->at(bpr_pos)){
                 d = topology.rev_st_string_depth(bpr_pos);
             } else{
@@ -227,10 +187,9 @@ public:
                 assert(data.rev_st_maximal_marks->at(parent)); // Should be at a maxrep
                 d = topology.rev_st_string_depth(parent) + 1; // One character left-extension of a maxrep
             }
-            
         }
         
-        return {index.search(I,c), d+1};
+        return {I_Wc, d+1};
     }
 };
 
@@ -244,7 +203,7 @@ public:
 
     Basic_Scorer(double escape_prob, bool maxrep_contexts) : escape_prob(escape_prob), maxrep_contexts(maxrep_contexts) {}
 
-    virtual double score(Interval I, int64_t d, char c, Topology& topology, BWT& index, Global_Data& G){
+    double score(Interval I, int64_t d, char c, Topology& topology, BWT& index, Global_Data& G){
         int64_t node = topology.leaves_to_node(I);
         if(maxrep_contexts && G.rev_st_maximal_marks->at(node) == 1 && topology.rev_st_string_depth(node) > d){
             // Inside an edge -> lex interval I represents the node at the end that is further

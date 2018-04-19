@@ -198,7 +198,7 @@ public:
     vector<int64_t> depths;
     int64_t maxreps_seen;
     int64_t maxdepth;
-    bool enabled;
+    bool enabled = true;
     
     void init(){
         maxreps_seen = 0;
