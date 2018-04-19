@@ -49,12 +49,13 @@ public:
     // return false and return false from here on. If c
     // is '\n' or '\r', read another byte recursively.
     bool getchar(char& c){
+        start:
         if(end_of_read) return false;
         file->read(&c,1);
         if(file->eof()) end_of_read = true;
         else{
             // Read was successful
-            if(c == '\n' || c == '\r') return getchar(c);
+            if(c == '\n' || c == '\r') goto start; // "Recursive call", but optimized so that the call stack does not grow
             if(c == '>') end_of_read = true;
         }
         return !end_of_read;
