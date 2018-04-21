@@ -1,4 +1,4 @@
-Space-efficient variable-length Markov chains
+Space-efficient variable-order Markov chains
 =========
 
 
@@ -46,7 +46,7 @@ Program `tests` runs the test suite, and takes approximately 10 minutes.
 Building a model
 ------------
 
-Program `build_model_optimized` builds a variable order Markov chain from a file. Example:
+Program `build_model_optimized` builds a variable-order Markov chain from a file. Example:
 
 ```
 mkdir models
@@ -111,9 +111,8 @@ Full list of flags:
        Framework for Space-Efficient String Kernels.
 ```
 
-If a model was already built for a string, program `reconstruct_optimized` rebuilds just the contexts part.
+If a model has already been built for a string, program `reconstruct_optimized` rebuilds just the contexts part. Example:
 
-Example:
 ```
 ./reconstruct_optimized --file data.txt --entropy 10 --dir models
 ```
