@@ -39,23 +39,19 @@ make tests
 make optimized
 ```
 
----------
+Building models
+------------
 
-There are four executables:
+Program `build_model_optimized` builds a variable order Markov chain from a file. Example:
 
-* tests
-
-Runs the test suite. Might take 10 minutes.
-
-* build_model_optimized
-
-Builds a variable order markov model from a file. Example:
-
+``
 mkdir models
 ./build_model_optimized --reference-raw data.txt --entropy 0.2 --outputdir models --maxreps-pruning --rle
+``
 
 Full list of flags:
 
+``
 --reference-fasta [file path]
     Takes the input file in the fasta-format. Not tested very well :)
     
@@ -109,7 +105,19 @@ Full list of flags:
        against the threshold. In case of --four-thresholds, there are three 
        values corresponding to equations 2,3 and 4 in the paper A 
        Framework for Space-Efficient String Kernels.
-     
+``
+
+
+
+---------
+
+There are four executables:
+
+* tests
+
+Runs the test suite. Might take 10 minutes.
+
+
     
 If there is a problem with some of the flags maybe I updated the flags but forgot
 to update this documentation, or maybe I typoed something. In this case please check
