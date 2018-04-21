@@ -1,3 +1,7 @@
+Space-efficient variable-length Markov chains
+=========
+
+
 Compiling:
 
 * Install sdsl-lite at the project root:
