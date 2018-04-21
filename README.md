@@ -44,15 +44,15 @@ Building models
 
 Program `build_model_optimized` builds a variable order Markov chain from a file. Example:
 
-``
+```
 mkdir models
 ./build_model_optimized --reference-raw data.txt --entropy 0.2 --outputdir models --maxreps-pruning --rle
-``
+```
 
 Full list of flags:
 
-``
- --reference-fasta [file path]
+```
+--reference-fasta [file path]
     Takes the input file in the fasta-format. Not tested very well :)
     
 --reference-raw [file path]
@@ -105,7 +105,7 @@ Full list of flags:
        against the threshold. In case of --four-thresholds, there are three 
        values corresponding to equations 2,3 and 4 in the paper A 
        Framework for Space-Efficient String Kernels.
-``
+```
 
 
 
