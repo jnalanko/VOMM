@@ -57,42 +57,25 @@ Full list of flags:
 
 * `--reference-fasta [file path]` Takes the input file in the fasta-format. Not tested very well :)
     
-* `--reference-raw [file path]` Takes the input in a raw text file
+* `--reference-raw [file path]` Takes the input in a raw text file.
     
---outputdir [directory path]
-    Where to write the built model. This directory must exist before running!
-    The model consists of a set of files such that the filename of each model file
-    is prefixed by the filename. This means that if you build models for two 
-    files with the same filename into the same output directory, then the latter 
-    model will overwrite the former.
+* `--outputdir [directory path]` Where to write the built model. This directory must exist before running! The model consists of a set of files such that the filename of each model file is prefixed by the filename. This means that if you build models for two files with the same filename into the same output directory, then the latter model will overwrite the former.
      
---maxreps-pruning
-    Enables maxrep pruning
+* `--maxreps-pruning` Enables maxrep pruning.
     
---rle
-    Enables run length encoding
+* `--rle` Enables run-length encoding.
     
---depth [integer depth]
-    Enables depth pruning to the given depth. ALSO ENABLES MAXREP PRUNING.
+* `--depth [integer depth]` Enables depth pruning to the given depth. ALSO ENABLES MAXREP PRUNING.
    
---entropy [float threshold]
-    Use entropy-style contexts with the given threshold
+* `--entropy [float threshold]` Use entropy-style contexts with the given threshold.
    
---KL [float threshold]
-    Use Kullback–Leibler-style contexts with the given threshold
+* `--KL [float threshold]` Use Kullback–Leibler-style contexts with the given threshold.
     
---pnorm [integer p] [float threshold]
-    Use p-norm-style contexts with the given threshold
+* `--pnorm [integer p] [float threshold]` Use p-norm-style contexts with the given threshold.
     
---four-thresholds [float tau1] [float tau2] [float tau3] [float tau4]
-    Use the context formula with the four thresholds tau1,tau2,tau3,tau4
+* `--four-thresholds [float tau1] [float tau2] [float tau3] [float tau4]` Use the context formula with the four thresholds tau1,tau2,tau3,tau4.
     
---store-depths
-    Stores the string depth of every maximal repeat in the topology as binary 
-    integers into outputdir + "/" + filename_prefix + ".string_depths". The binary
-    representation has length that is just enough to store the largest depth.
-    The file is created even if the option is not enabled, but in that case
-    it will be very small.
+* `--store-depths` Stores the string depth of every maximal repeat in the topology as binary integers into `outputdir + "/" + filename_prefix + ".string_depths"`. The binary representation has length that is just enough to store the largest depth.    The file is created even if the option is not enabled, but in that case it will be very small.
 
 --context-stats
     Computes statistics on the contexts. Writes two files 
