@@ -7,7 +7,7 @@ Installation
 
 Compiling:
 
-* Install sdsl-lite at the project root:
+Install the sdsl-lite library at the project root:
 
 ```
 git clone https://github.com/simongog/sdsl-lite
@@ -16,24 +16,30 @@ sh install.sh
 cd ..
 ```
 
-* Install BD_BWT_index
+Install BD_BWT_index:
 
+```
 cd BD_BWT_index
 cmake -DCMAKE_BUILD_TYPE=Release .
 make
 cd ..
+```
 
 or
 
+```
 cd BD_BWT_index
 cmake -DCMAKE_BUILD_TYPE=Debug . 
 make
 cd ..
+```
 
-* Compile rest with make
+Compile the rest with make:
 
+```
 make tests
 make optimized
+```
 
 ---------
 
