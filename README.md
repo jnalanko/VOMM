@@ -55,12 +55,9 @@ mkdir models
 
 Full list of flags:
 
-```
---reference-fasta [file path]
-    Takes the input file in the fasta-format. Not tested very well :)
+* `--reference-fasta [file path]` Takes the input file in the fasta-format. Not tested very well :)
     
---reference-raw [file path]
-    Takes the input in a raw text file
+* `--reference-raw [file path]` Takes the input in a raw text file
     
 --outputdir [directory path]
     Where to write the built model. This directory must exist before running!
