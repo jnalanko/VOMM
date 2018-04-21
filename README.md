@@ -73,7 +73,7 @@ Full list of flags:
     
 * `--pnorm [integer p] [float threshold]` Use p-norm-style contexts with the given threshold.
     
-* `--four-thresholds [float tau1] [float tau2] [float tau3] [float tau4]` Use the context formula with the four thresholds *tau1, tau2, tau3, tau4* from the paper [A Framework for Space-Efficient String Kernels][KERNELSPAPER].
+* `--four-thresholds [float tau1] [float tau2] [float tau3] [float tau4]` Use the context formula with the four thresholds *tau1*, *tau2*, *tau3*, *tau4* from the paper [A framework for space-efficient string kernels][KERNELSPAPER].
     
 * `--store-depths` Stores the string depth of every maximal repeat in the topology as binary integers into `outputdir + "/" + filename_prefix + ".string_depths"`. The binary representation has length that is just enough to store the largest depth.    The file is created even if the option is not enabled, but in that case it will be very small.
 
