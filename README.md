@@ -107,9 +107,11 @@ Full list of flags:
       The score(s) are:
        In case of --KL, --entropy or --pnorm, the value that is compared 
        against the threshold. In case of --four-thresholds, there are three 
-       values corresponding to equations 2,3 and 4 in the paper A 
-       Framework for Space-Efficient String Kernels.
+       values corresponding to equations 2,3 and 4 in the following paper:
 ```
+
+[A Framework for Space-Efficient String Kernels][KERNELSPAPER]
+
 
 If a model had already been built for a string, program `reconstruct_optimized` rebuilds just its contexts part. Example:
 
@@ -176,6 +178,7 @@ Full list of flags:
 [Probabilistic suffix array: efficient modeling and prediction of protein families][SAPAPER]
 
 
+[KERNELSPAPER]: https://link.springer.com/article/10.1007/s00453-017-0286-4 "A framework for space-efficient string kernels"
 [SAPAPER]: https://academic.oup.com/bioinformatics/article/28/10/1314/211256 "Probabilistic suffix array: efficient modeling and prediction of protein families"
 
 
