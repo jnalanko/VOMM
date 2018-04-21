@@ -171,9 +171,10 @@ Full list of flags:
     Escape probability used in scoring.
 
 --lin-scoring
-    Uses the scoring method from the paper [Probabilistic suffix array: 
-    efficient modeling and prediction of protein families][SAPAPER].
+    Uses the scoring method from the following paper:
 ```
+[Probabilistic suffix array: efficient modeling and prediction of protein families][SAPAPER]
+
 
 [SAPAPER]: https://academic.oup.com/bioinformatics/article/28/10/1314/211256 "Probabilistic suffix array: efficient modeling and prediction of protein families"
 
