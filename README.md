@@ -2,14 +2,19 @@ Space-efficient variable-length Markov chains
 =========
 
 
+Installation
+------------
+
 Compiling:
 
 * Install sdsl-lite at the project root:
 
+```
 git clone https://github.com/simongog/sdsl-lite
 cd sdsl-lite
 sh install.sh
 cd ..
+```
 
 * Install BD_BWT_index
 
