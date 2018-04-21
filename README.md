@@ -145,7 +145,7 @@ Full list of flags:
 Computing the score of a query
 ---------
 
-Program `score_string_optimized` scores a string given a model that was previously built with `build_model_optimized`. It writes the log-probabilities to `stdout`, one line per query string. Writes a log to `stderr` while it's running.
+Program `score_string_optimized` scores a string given a model that had been previously built with `build_model_optimized`. It writes the log-probabilities to `stdout`, one line per query string. Writes a log to `stderr` while it's running.
 
 Example:
 
