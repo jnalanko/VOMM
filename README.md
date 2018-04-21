@@ -39,7 +39,11 @@ make tests
 make optimized
 ```
 
-Building models
+Program `tests` runs the test suite, and takes approximately 10 minutes.
+
+
+
+Building a model
 ------------
 
 Program `build_model_optimized` builds a variable order Markov chain from a file. Example:
@@ -108,14 +112,10 @@ Full list of flags:
 ```
 
 
-
+Computing the score of a query string
 ---------
 
-There are four executables:
 
-* tests
-
-Runs the test suite. Might take 10 minutes.
 
 
     
