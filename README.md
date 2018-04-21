@@ -52,7 +52,7 @@ mkdir models
 Full list of flags:
 
 ``
---reference-fasta [file path]
+ --reference-fasta [file path]
     Takes the input file in the fasta-format. Not tested very well :)
     
 --reference-raw [file path]
