@@ -111,7 +111,7 @@ Full list of flags:
        Framework for Space-Efficient String Kernels.
 ```
 
-If a model has already been built for a string, program `reconstruct_optimized` rebuilds just the contexts part. Example:
+If a model had already been built for a string, program `reconstruct_optimized` rebuilds just its contexts part. Example:
 
 ```
 ./reconstruct_optimized --file data.txt --entropy 10 --dir models
