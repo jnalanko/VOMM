@@ -145,9 +145,7 @@ Full list of flags:
 Computing the score of a query
 ---------
 
-Program `score_string_optimized` scores a string given a model that had been previously built with `build_model_optimized`. It writes log-probabilities to `stdout`, one line per query, and it writes to `stderr` a progress report while it's running.
-
-Example:
+Program `score_string_optimized` scores a string given a model that had been previously built with `build_model_optimized`. It writes log-probabilities to `stdout`, one line per query, and it writes to `stderr` a progress report while it's running. Example:
 
 ```
 ./score_string_optimized --query-raw queries.txt --dir models --file data.txt --escapeprob 0.05
