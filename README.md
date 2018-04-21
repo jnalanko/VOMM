@@ -43,7 +43,7 @@ Program `tests` runs the test suite, and takes approximately 10 minutes.
 
 
 
-Building a model
+Building and rebuilding models
 ------------
 
 Program `build_model_optimized` builds a variable-order Markov chain from a file. Example:
