@@ -111,67 +111,15 @@ Full list of flags:
        Framework for Space-Efficient String Kernels.
 ```
 
-
-Computing the score of a query string
----------
-
-
-
-
-    
-If there is a problem with some of the flags maybe I updated the flags but forgot
-to update this documentation, or maybe I typoed something. In this case please check
-the main-function in build_model.cpp to see what the flags really are and how they 
-are parsed.
-
-* score_string_optimized
-
-Scores a string given a previously built model with build_model_optimized. Writes the
-log-probabilities(s) to stdout, one line per query. Writes a log to stderr while it's
-running.
+If a model was already built for a string, program `reconstruct_optimized` rebuilds just the contexts part.
 
 Example:
-
-./score_string_optimized --query-raw queries.txt --dir models --file data.txt --escapeprob 0.05
-
-Full list of flags:
-
---query-fasta [file path]
-    Takes in the queries in fasta-format. Each read is one query. Not tested very well.
-    
---query-raw [file path]
-    Takes in single raw text file as one big query.
-    
---dir [directory path]
-    Directory where the model is stored
-    
---file [filename]
-    Filename of the reference string. Only the filename, not the full path. 
-    That is, if the data is at ./foo/bar/data.txt, give only data.txt. This 
-    is needed so that the code knows the prefix of the model files.
-
---escapeprob [float prob]
-    Escape probability used in scoring.
-
---lin-scoring
-    Uses the scoring method from the paper "Probabilistic suffix array: 
-    efficient modeling and prediction of protein families" by Lin et al.
-
-If there is a problem with some of the flags maybe I updated the flags but forgot
-to update this documentation, or maybe I typoed something. In this case please check
-the main-function in score_string.cpp to see what the flags really are and how they 
-are parsed.
-
-* reconstruct_optimized
-
-Rebuilds the contexts for a previously built model.
-
-Example:
-
+```
 ./reconstruct_optimized --file data.txt --entropy 10 --dir models
+```
 
 Full list of flags:
-
+```
 --dir [directory path]
     The directory where the model is
     
@@ -192,3 +140,49 @@ Full list of flags:
     
 --four-thresholds [float tau1] [float tau2] [float tau3] [float tau4]
     Use the context formula with the four thresholds tau1,tau2,tau3,tau4
+```
+
+
+Computing the score of a query
+---------
+
+Program `score_string_optimized` scores a string given a model that was previously built with `build_model_optimized`. It writes the log-probabilities to `stdout`, one line per query string. Writes a log to `stderr` while it's running.
+
+Example:
+
+```
+./score_string_optimized --query-raw queries.txt --dir models --file data.txt --escapeprob 0.05
+```
+
+Full list of flags:
+```
+--query-fasta [file path]
+    Takes in the queries in fasta-format. Each read is one query. Not tested very well.
+    
+--query-raw [file path]
+    Takes in single raw text file as one big query.
+    
+--dir [directory path]
+    Directory where the model is stored
+    
+--file [filename]
+    Filename of the reference string. Only the filename, not the full path. 
+    That is, if the data is at ./foo/bar/data.txt, give only data.txt. This 
+    is needed so that the code knows the prefix of the model files.
+
+--escapeprob [float prob]
+    Escape probability used in scoring.
+
+--lin-scoring
+    Uses the scoring method from the paper "Probabilistic suffix array: 
+    efficient modeling and prediction of protein families" by Lin et al.
+```
+If there is a problem with some of the flags maybe I updated the flags but forgot
+to update this documentation, or maybe I typoed something. In this case please check
+the main-function in score_string.cpp to see what the flags really are and how they 
+are parsed.    
+    
+If there is a problem with some of the flags maybe I updated the flags but forgot
+to update this documentation, or maybe I typoed something. In this case please check
+the main-function in build_model.cpp to see what the flags really are and how they 
+are parsed.
