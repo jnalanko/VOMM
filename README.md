@@ -118,28 +118,20 @@ Program `score_string_optimized` scores a string given a model that had been pre
 ```
 
 Full list of flags:
-```
---query-fasta [file path]
-    Takes in the queries in fasta-format. Each read is one query. Not tested very well.
+
+* `--query-fasta [file path]` Takes in the queries in fasta-format. Each read is one query. Not tested very well.
     
---query-raw [file path]
-    Takes in single raw text file as one big query.
+* `--query-raw [file path]` Takes in single raw text file as one big query.
     
---dir [directory path]
-    Directory where the model is stored
+* `--dir [directory path]` Directory where the model is stored.
     
---file [filename]
-    Filename of the reference string. Only the filename, not the full path. 
-    That is, if the data is at ./foo/bar/data.txt, give only data.txt. This 
+* `--file [filename]` Filename of the reference string. Only the filename, not the full path. 
+    That is, if the data is at `./foo/bar/data.txt`, give only `data.txt`. This 
     is needed so that the code knows the prefix of the model files.
 
---escapeprob [float prob]
-    Escape probability used in scoring.
+* `--escapeprob [float prob]` Escape probability used in scoring.
 
---lin-scoring
-    Uses the scoring method from the following paper:
-```
-[Probabilistic suffix array: efficient modeling and prediction of protein families][SAPAPER]
+* `--lin-scoring` Uses the scoring method from the paper [Probabilistic suffix array: efficient modeling and prediction of protein families][SAPAPER].
 
 
 [KERNELSPAPER]: https://link.springer.com/article/10.1007/s00453-017-0286-4 "A framework for space-efficient string kernels"
