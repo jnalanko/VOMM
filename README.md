@@ -78,14 +78,10 @@ Full list of flags:
 * `--store-depths` Stores the string depth of every maximal repeat in the topology as binary integers into `outputdir + "/" + filename_prefix + ".string_depths"`. The binary representation has length that is just enough to store the largest depth.    The file is created even if the option is not enabled, but in that case it will be very small.
 
 * `--context-stats` Computes statistics on the contexts. Writes two files into the model directory:
-** `stats.context_summary.txt`: Number of context candidates and number of contexts.
-** `stats.depths_and_scores.txt`: One line for each context: `[string depth] [tree depth] [score(s)]`. The score(s) are:
-       In case of --KL, --entropy or --pnorm, the value that is compared 
-       against the threshold. In case of --four-thresholds, there are three 
-       values corresponding to equations 2,3 and 4 in the following paper:
-
-
-[A Framework for Space-Efficient String Kernels][KERNELSPAPER]
+  * `stats.context_summary.txt`: number of context candidates and number of contexts.
+  * `stats.depths_and_scores.txt`: one line for each context: `[string depth] [tree depth] [score(s)]`. The score(s) are:
+    * In case of --KL, --entropy or --pnorm, the value that is compared against the threshold. 
+    * In case of --four-thresholds, there are three values corresponding to equations 2,3 and 4 in the paper "[A framework for space-efficient string kernels][KERNELSPAPER]" (see also the [manuscript on arXiv][KERNELSARXIV]).
 
 
 If a model had already been built for a string, program `reconstruct_optimized` rebuilds just its contexts part. Example:
