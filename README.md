@@ -1,4 +1,4 @@
-Space-efficient variable-order Markov chains
+Space-efficient variable-order Markov models
 =========
 
 
@@ -46,7 +46,7 @@ The `tests` executable runs the test suite, and takes approximately 10 minutes.
 Building and rebuilding models
 ------------
 
-The `build_model_optimized` executable builds a variable-order Markov chain from a file. Example:
+The `build_model_optimized` executable builds a variable-order Markov model from a file. Example:
 
 ```
 mkdir models
