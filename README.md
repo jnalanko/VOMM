@@ -90,28 +90,22 @@ If a model had already been built for a string, program `reconstruct_optimized` 
 ```
 
 Full list of flags:
-```
---dir [directory path]
-    The directory where the model is
-    
---file
-    The filename of the input data from which the model was built. Only the
-    filename, not the full path. That is, if the data is at ./foo/bar/data.txt,
-    give only data.txt. This is needed so that the code knows the prefix of the 
+
+* `--dir [directory path]` The directory where the model is.
+
+* `--file` The filename of the input data from which the model was built. Only the
+    filename, not the full path. That is, if the data is at `./foo/bar/data.txt`,
+    give only `data.txt`. This is needed so that the code knows the prefix of the 
     model files.
     
---entropy [float threshold]
-    Use entropy-style contexts with the given threshold
+* `--entropy [float threshold]` Use entropy-style contexts with the given threshold.
    
---KL [float threshold]
-    Use Kullback–Leibler-style contexts with the given threshold
+* `--KL [float threshold]` Use Kullback–Leibler-style contexts with the given threshold.
     
---pnorm [integer p] [float threshold]
-    Use p-norm-style contexts with the given threshold
+* `--pnorm [integer p] [float threshold]` Use p-norm-style contexts with the given threshold.
     
---four-thresholds [float tau1] [float tau2] [float tau3] [float tau4]
-    Use the context formula with the four thresholds tau1,tau2,tau3,tau4
-```
+* `--four-thresholds [float tau1] [float tau2] [float tau3] [float tau4]` Use the context formula with the four thresholds, as described above.
+
 
 
 Computing the score of a query
