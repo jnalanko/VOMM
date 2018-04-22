@@ -73,7 +73,7 @@ Full list of flags:
     
 * `--pnorm [integer p] [float threshold]` Use p-norm-style contexts with the given threshold.
     
-* `--four-thresholds [float tau1] [float tau2] [float tau3] [float tau4]` Use the context formula with the four thresholds *tau1*, *tau2*, *tau3*, *tau4* from the paper [A framework for space-efficient string kernels][KERNELSPAPER].
+* `--four-thresholds [float tau1] [float tau2] [float tau3] [float tau4]` Use the context formula with the four thresholds *tau1*, *tau2*, *tau3*, *tau4* from the paper "[A framework for space-efficient string kernels][KERNELSPAPER]" (see also the [manuscript on arXiv][KERNELSARXIV]).
     
 * `--store-depths` Stores the string depth of every maximal repeat in the topology as binary integers into `outputdir + "/" + filename_prefix + ".string_depths"`. The binary representation has length that is just enough to store the largest depth.    The file is created even if the option is not enabled, but in that case it will be very small.
 
@@ -154,6 +154,7 @@ Full list of flags:
 
 
 [KERNELSPAPER]: https://link.springer.com/article/10.1007/s00453-017-0286-4 "A framework for space-efficient string kernels"
+[KERNELSARXIV]: https://arxiv.org/abs/1502.06370
 [SAPAPER]: https://academic.oup.com/bioinformatics/article/28/10/1314/211256 "Probabilistic suffix array: efficient modeling and prediction of protein families"
 
 
