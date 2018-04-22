@@ -138,7 +138,7 @@ Full list of flags:
 [KERNELSARXIV]: https://arxiv.org/abs/1502.06370
 [SAPAPER]: https://academic.oup.com/bioinformatics/article/28/10/1314/211256 "Probabilistic suffix array: efficient modeling and prediction of protein families"
 
-
+<!---
 If there is a problem with some of the flags maybe I updated the flags but forgot
 to update this documentation, or maybe I typoed something. In this case please check
 the main-function in score_string.cpp to see what the flags really are and how they 
@@ -148,3 +148,4 @@ If there is a problem with some of the flags maybe I updated the flags but forgo
 to update this documentation, or maybe I typoed something. In this case please check
 the main-function in build_model.cpp to see what the flags really are and how they 
 are parsed.
+-->
