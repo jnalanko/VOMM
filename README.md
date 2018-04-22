@@ -131,7 +131,7 @@ Full list of flags:
 
 * `--escapeprob [float prob]` Escape probability used in scoring.
 
-* `--lin-scoring` Uses the scoring method from the paper [Probabilistic suffix array: efficient modeling and prediction of protein families][SAPAPER].
+* `--lin-scoring` Uses the scoring method from the paper "[Probabilistic suffix array: efficient modeling and prediction of protein families][SAPAPER]".
 
 
 [KERNELSPAPER]: https://link.springer.com/article/10.1007/s00453-017-0286-4 "A framework for space-efficient string kernels"
