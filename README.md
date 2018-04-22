@@ -46,7 +46,7 @@ The `tests` executable runs the test suite, and takes approximately 10 minutes.
 Building and rebuilding models
 ------------
 
-Program `build_model_optimized` builds a variable-order Markov chain from a file. Example:
+The `build_model_optimized` executable builds a variable-order Markov chain from a file. Example:
 
 ```
 mkdir models
