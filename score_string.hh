@@ -89,16 +89,18 @@ template<typename inputstream_t>
 double main_loop(inputstream_t& S, Global_Data& data, Topology& topo_alg, Scoring_Function& scorer, Loop_Invariant_Updater& updater){
     double logprob = 0;
     Interval I(0,data.revbwt->size()-1); // todo: or: index.empty_string()
+    int64_t node; 
     int64_t string_depth = 0;
     char c;
     
     while(S.getchar(c)){
-        
+        node=topo_alg.leaves_to_node(I);
+
         // Compute log-probability of c
-        logprob += scorer.score(I, string_depth, c, topo_alg, *data.revbwt, data);
+        logprob += scorer.score(I, node, string_depth, c, topo_alg, *data.revbwt, data);
         
         // Update I and string_depth
-        pair<Interval, int64_t> new_values = updater.update(I, string_depth, c, data, topo_alg, *data.revbwt);
+        pair<Interval, int64_t> new_values = updater.update(I,node,string_depth, c, data, topo_alg, *data.revbwt);
         I = new_values.first;
         string_depth = new_values.second;
     }
@@ -127,17 +129,17 @@ template<> void init_support<Pruned_Topology_Mapper>(Pruned_Topology_Mapper& map
 
 class Basic_Updater : public Loop_Invariant_Updater {
 
+// Right-extend. If failure, take parent and try again untill success
+    
 public:
 
-    pair<Interval, int64_t> update(Interval I, int64_t d, char c, Global_Data& data, Topology& topology, BWT& index){
+    pair<Interval, int64_t> update(Interval I,int64_t node, int64_t d, char c, Global_Data& data, Topology& topology, BWT& index){
         (void) data; // Not needed. Make the compiler happy.
         bool recalculate_depth = false;
         Interval I_Wc;
-        int64_t node = -1;
         while(true){
             I_Wc = index.search(I,c);
             if(I_Wc.size() != 0) break;
-            if(node == -1) node = topology.leaves_to_node(I); // Map to topology
             node = topology.rev_st_parent(node); // Take parent
             I = topology.node_to_leaves(node); // Map back to colex interval
             recalculate_depth = true;
@@ -158,13 +160,16 @@ public:
 
 class Maxrep_Pruned_Updater : public Loop_Invariant_Updater { // The same as non-depth bounded?
 
+// Right-extend. If failure, go to the nearest non-pruned node and try again.
+// If failure, take parent and try again until successs
+    
 public:
         
-    pair<Interval, int64_t> update(Interval I, int64_t d, char c, Global_Data& data, Topology& topology, BWT& index){
+    // See the base class for documentation on what this function is suppposed to do
+    pair<Interval, int64_t> update(Interval I, int64_t node,int64_t d, char c, Global_Data& data, Topology& topology, BWT& index){
         bool recalculate_depth = false;
         bool first_iteration = true;
         Interval I_Wc;
-        int64_t node;
         while(true){
             I_Wc = index.search(I,c);
             if(I_Wc.size() != 0) break;
@@ -207,8 +212,8 @@ public:
 
     Basic_Scorer(double escape_prob, bool maxrep_contexts) : escape_prob(escape_prob), maxrep_contexts(maxrep_contexts) {}
 
-    double score(Interval I, int64_t d, char c, Topology& topology, BWT& index, Global_Data& G){
-        int64_t node = topology.leaves_to_node(I);
+    // See the base class for documentation on what this function is suppposed to do
+    double score(Interval I,int64_t node, int64_t d, char c, Topology& topology, BWT& index, Global_Data& G){
         if(maxrep_contexts && G.rev_st_maximal_marks->at(node) == 1 && topology.rev_st_string_depth(node) > d){
             // Inside an edge -> lex interval I represents the node at the end that is further
             // away from the root -> need to go to the edge closest to the root first
@@ -226,7 +231,7 @@ public:
         if(R.size() == 0){
             return log2(escape_prob);
         } else{
-            // don't count in the dollar the context in the interval of the empty string, hence -1
+            // don't count in the dollar in the interval of the empty string, hence -1
             return log2((double)R.size()) - log2(min(I.size(), index.size()-1));
         }
     }
@@ -251,8 +256,7 @@ public:
     Recursive_Scorer(double escape_prob, bool maxrep_contexts) 
     : escape_prob(escape_prob), maxrep_contexts(maxrep_contexts) {}
 
-    virtual double score(Interval I, int64_t d, char c, Topology& topology, BWT& index, Global_Data& G){
-        int64_t node = topology.leaves_to_node(I);
+    virtual double score(Interval I, int64_t node,int64_t d, char c, Topology& topology, BWT& index, Global_Data& G){
         if(maxrep_contexts && G.rev_st_maximal_marks->at(node) == 1 && topology.rev_st_string_depth(node) > d){
             // Inside an edge -> lex interval I represents the node at the end that is further
             // away from the root -> need to go to the edge closest to the root first
@@ -277,7 +281,7 @@ public:
             int64_t depth2 = get_context_depth(node, topology);
             assert(depth1 != depth2);
             int64_t distance_travelled = depth1 - depth2;
-            double ancestor_score = score(I, depth2, c, topology, index, G);
+            double ancestor_score = score(I, node, depth2, c, topology, index, G);
             for(int64_t i = 0; i < distance_travelled; i++) ancestor_score += log2(escape_prob);
             return ancestor_score;
         } else{
@@ -403,3 +407,5 @@ double score_string(string& S, Global_Data& G, Scoring_Function& scorer, Loop_In
 int score_string_main(int argc, char** argv);
     
 #endif
+
+

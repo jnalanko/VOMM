@@ -148,15 +148,46 @@ public:
 class Global_Data;
 class Loop_Invariant_Updater{
 public:
-    virtual std::pair<Interval, int64_t> update(Interval I, int64_t d, char c, Global_Data& data, Topology& topology, BWT& index) = 0;
+      /**
+       * Updates the matching statistics loop invariant.
+       * @param I The colex-interval of the longest match at the current position
+       * @param node The deepest node that contains all leaves in interval I. Represented by
+       *             the position of the open parenthesis in the BPR of the revese suffix tree.
+       *             If the BPR is complete, then this the node with colex-interval I. If the BPR
+       *             has been pruned, this is the lowest non-pruned ancestor of the node with
+       *             colex-interval I
+       * @param d The depth of the longest match at the current position
+       * @param c The next character in the text
+       * @param data The global data structures.
+       * @param topology A class implementing the required topology operations
+       * @param index The BWT of the reverse
+       * @return Suppose the current match is W. Then we return the colex-interval of the longest
+       *         suffix of Wc that is found in the index, and the string length of that.
+       */
+    virtual std::pair<Interval, int64_t> update(Interval I, int64_t node, int64_t d, char c, Global_Data& data, Topology& topology, BWT& index) = 0;
     
     virtual ~Loop_Invariant_Updater() {} // https://stackoverflow.com/questions/8764353/what-does-has-virtual-method-but-non-virtual-destructor-warning-mean-durin
 
 };
 
 class Scoring_Function{
-public:  
-    virtual double score(Interval I, int64_t d, char c, Topology& topology, BWT& index, Global_Data& G) = 0;
+public:
+      /**
+       * Computes the log-probability of the current position
+       * @param I The colex-interval of the longest match at the current position
+       * @param node The deepest node that contains all leaves in interval I. Represented by
+       *             the position of the open parenthesis in the BPR of the revese suffix tree.
+       *             If the BPR is complete, then this the node with colex-interval I. If the BPR
+       *             has been pruned, this is the lowest non-pruned ancestor of the node with
+       *             colex-interval I
+       * @param d The depth of the longest match at the current position
+       * @param c The character for which we want to compute a probability
+       * @param topology A class implementing the required topology operations
+       * @param index The BWT of the reverse
+       * @param data The global data structures.
+       * @return Suppose the current longest match is W. Then returns the log-probability of Wc.
+       */
+    virtual double score(Interval I,int64_t node, int64_t d, char c, Topology& topology, BWT& index, Global_Data& G) = 0;
     
     virtual ~Scoring_Function() {} // https://stackoverflow.com/questions/8764353/what-does-has-virtual-method-but-non-virtual-destructor-warning-mean-durin
 
@@ -240,9 +271,7 @@ class Context_Formula{
     
 public:
     virtual sdsl::bit_vector get_rev_st_context_marks(BIBWT* index, int64_t rev_st_bpr_size, Iterator& candidate_iterator, Topology_Mapper& mapper) = 0;
-
     virtual ~Context_Formula() {} // https://stackoverflow.com/questions/8764353/what-does-has-virtual-method-but-non-virtual-destructor-warning-mean-durin
-
 }; */
 
 
