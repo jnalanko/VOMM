@@ -282,7 +282,7 @@ public:
             assert(depth1 != depth2);
             int64_t distance_travelled = depth1 - depth2;
             double ancestor_score = score(I, node, depth2, c, topology, index, G);
-            for(int64_t i = 0; i < distance_travelled; i++) ancestor_score += log2(escape_prob);
+            ancestor_score += distance_travelled * log2(escape_prob);
             return ancestor_score;
         } else{
             // Found c
