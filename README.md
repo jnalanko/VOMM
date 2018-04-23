@@ -81,7 +81,7 @@ Full list of flags:
   * `stats.context_summary.txt`: number of context candidates and number of contexts.
   * `stats.depths_and_scores.txt`: one line for each context: `[string depth] [tree depth] [score(s)]`. The score(s) are:
     * In case of `--KL`, `--entropy` or `--pnorm`, the value that is compared against the threshold. 
-    * In case of `--four-thresholds`, there are three values corresponding to equations 2,3 and 4 in the paper "[A framework for space-efficient string kernels][KERNELSPAPER]" (see also the [manuscript on arXiv][KERNELSARXIV]).
+    * In case of `--four-thresholds`, there are three values corresponding to equations 2,3 and 4 in the paper "[A framework for space-efficient string kernels][KERNELSPAPER]".
 
 If a model had already been built for a string, program `reconstruct_optimized` rebuilds just its contexts part. Example:
 
@@ -135,7 +135,6 @@ Full list of flags:
 
 
 [KERNELSPAPER]: https://link.springer.com/article/10.1007/s00453-017-0286-4 "A framework for space-efficient string kernels"
-[KERNELSARXIV]: https://arxiv.org/abs/1502.06370
 [SAPAPER]: https://academic.oup.com/bioinformatics/article/28/10/1314/211256 "Probabilistic suffix array: efficient modeling and prediction of protein families"
 
 <!---
