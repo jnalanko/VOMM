@@ -2,7 +2,7 @@ Space-efficient variable-order Markov models
 =========
 
 
-Installation
+Installing and testing
 ------------
 
 Install the [sdsl-lite library](https://github.com/simongog/sdsl-lite) at the project root:
