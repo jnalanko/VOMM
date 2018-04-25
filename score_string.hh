@@ -97,10 +97,10 @@ double main_loop(inputstream_t& S, Global_Data& data, Topology& topo_alg, Scorin
         node=topo_alg.leaves_to_node(I);
 
         // Compute log-probability of c
-        logprob += scorer.score(I, node, string_depth, c, topo_alg, *data.revbwt, data);
+        logprob += scorer.score(/*I,*/ node, string_depth, c, topo_alg, *data.revbwt, data);
         
         // Update I and string_depth
-        pair<Interval, int64_t> new_values = updater.update(I,node,string_depth, c, data, topo_alg, *data.revbwt);
+	pair<Interval, int64_t> new_values = updater.update(I,node,string_depth, c, data, topo_alg, *data.revbwt);
         I = new_values.first;
         string_depth = new_values.second;
     }
@@ -213,7 +213,7 @@ public:
     Basic_Scorer(double escape_prob, bool maxrep_contexts) : escape_prob(escape_prob), maxrep_contexts(maxrep_contexts) {}
 
     // See the base class for documentation on what this function is suppposed to do
-    double score(Interval I,int64_t node, int64_t d, char c, Topology& topology, BWT& index, Global_Data& G){
+    double score(/*Interval I,*/int64_t node, int64_t d, char c, Topology& topology, BWT& index, Global_Data& G){
         if(maxrep_contexts && G.rev_st_maximal_marks->at(node) == 1 && topology.rev_st_string_depth(node) > d){
             // Inside an edge -> lex interval I represents the node at the end that is further
             // away from the root -> need to go to the edge closest to the root first
@@ -223,7 +223,7 @@ public:
             node = topology.rev_st_parent(node);
         }
         node = topology.rev_st_lma(node);
-        I = topology.node_to_leaves(node);
+        Interval I = topology.node_to_leaves(node);
 
         // Compute the probability of S[i]
         Interval R = index.search(I, c);
@@ -256,7 +256,7 @@ public:
     Recursive_Scorer(double escape_prob, bool maxrep_contexts) 
     : escape_prob(escape_prob), maxrep_contexts(maxrep_contexts) {}
 
-    virtual double score(Interval I, int64_t node,int64_t d, char c, Topology& topology, BWT& index, Global_Data& G){
+    virtual double score(/*Interval I,*/ int64_t node,int64_t d, char c, Topology& topology, BWT& index, Global_Data& G){
         if(maxrep_contexts && G.rev_st_maximal_marks->at(node) == 1 && topology.rev_st_string_depth(node) > d){
             // Inside an edge -> lex interval I represents the node at the end that is further
             // away from the root -> need to go to the edge closest to the root first
@@ -266,7 +266,7 @@ public:
             node = topology.rev_st_parent(node);
         }
         node = topology.rev_st_lma(node);
-        I = topology.node_to_leaves(node);
+        Interval I = topology.node_to_leaves(node);
 
         // Compute the probability of S[i]
         Interval R = index.search(I, c);
@@ -277,11 +277,11 @@ public:
             
             int64_t depth1 = get_context_depth(node, topology);
             node = topology.rev_st_lma(topology.rev_st_parent(node));
-            I = topology.node_to_leaves(node);
+            //I = topology.node_to_leaves(node);
             int64_t depth2 = get_context_depth(node, topology);
             assert(depth1 != depth2);
             int64_t distance_travelled = depth1 - depth2;
-            double ancestor_score = score(I, node, depth2, c, topology, index, G);
+            double ancestor_score = score(/*I,*/ node, depth2, c, topology, index, G);
             ancestor_score += distance_travelled * log2(escape_prob);
             return ancestor_score;
         } else{

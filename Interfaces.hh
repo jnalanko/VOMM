@@ -187,7 +187,7 @@ public:
        * @param data The global data structures.
        * @return Suppose the current longest match is W. Then returns the log-probability of Wc.
        */
-    virtual double score(Interval I,int64_t node, int64_t d, char c, Topology& topology, BWT& index, Global_Data& G) = 0;
+    virtual double score(/*Interval I,*/int64_t node, int64_t d, char c, Topology& topology, BWT& index, Global_Data& G) = 0;
     
     virtual ~Scoring_Function() {} // https://stackoverflow.com/questions/8764353/what-does-has-virtual-method-but-non-virtual-destructor-warning-mean-durin
 
