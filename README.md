@@ -9,8 +9,6 @@ Requirements
 * The [cmake][cmake] build system.
 * A 64-bit operating system. Either Mac OS X or Linux are currently supported.
 
-This repository includes code from [lz-rlbwt][PREZZA] by Nicola Prezza for the run-length-encoded BWT.
-
 
 Installing and testing
 ------------
@@ -160,3 +158,9 @@ to update this documentation, or maybe I typoed something. In this case please c
 the main-function in build_model.cpp to see what the flags really are and how they 
 are parsed.
 -->
+
+
+External resources used
+---------
+
+This repository includes code from [lz-rlbwt][PREZZA] by Nicola Prezza for the run-length-encoded BWT.
