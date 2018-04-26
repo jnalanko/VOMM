@@ -2,6 +2,16 @@ Space-efficient variable-order Markov models
 =========
 
 
+Requirements
+------------
+
+* A modern, C++11 ready compiler such as `g++` version 4.9 or higher or `clang` version 3.2 or higher.
+* The [cmake][cmake] build system.
+* A 64-bit operating system. Either Mac OS X or Linux are currently supported.
+
+This repository includes code from [lz-rlbwt][PREZZA] by Nicola Prezza for the run-length-encoded BWT.
+
+
 Installing and testing
 ------------
 
@@ -136,6 +146,7 @@ Full list of flags:
 
 [KERNELSPAPER]: https://link.springer.com/article/10.1007/s00453-017-0286-4 "A framework for space-efficient string kernels"
 [SAPAPER]: https://academic.oup.com/bioinformatics/article/28/10/1314/211256 "Probabilistic suffix array: efficient modeling and prediction of protein families"
+[PREZZA]: https://github.com/nicolaprezza/lz-rlbwt
 
 <!---
 If there is a problem with some of the flags maybe I updated the flags but forgot
