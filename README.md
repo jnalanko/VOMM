@@ -165,4 +165,9 @@ are parsed.
 External resources used
 ---------
 
-This repository includes code from [lz-rlbwt][PREZZA] by Nicola Prezza for the run-length-encoded BWT.
+This repository includes:
+
+* portions of code from [lz-rlbwt][PREZZA] by Nicola Prezza, for the run-length-encoded BWT;
+
+* the [BD_BWT_index](https://github.com/jnalanko/BD_BWT_index) by Jarno Alanko, for the bidirectional BWT index used during construction.
+
