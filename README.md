@@ -139,6 +139,8 @@ Full list of flags:
 
 * `--escapeprob [float prob]` Escape probability used in scoring.
 
+* `--recursive-fallback` Uses the recursive scoring method from the paper "[A framework for space-efficient string kernels][KERNELSPAPER]".
+
 * `--lin-scoring` Uses the scoring method from the paper "[Probabilistic suffix array: efficient modeling and prediction of protein families][SAPAPER]".
 
 
