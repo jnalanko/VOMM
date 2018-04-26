@@ -114,6 +114,8 @@ Full list of flags:
     
 * `--four-thresholds [float tau1] [float tau2] [float tau3] [float tau4]` Use the context formula with the four thresholds, as described above.
 
+* `--context-stats` Computes statistics on the contexts, as described above.
+
 
 
 Computing the score of a query
