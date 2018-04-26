@@ -367,6 +367,83 @@ template <typename input_stream_t> double score_string_lin(input_stream_t& S, Gl
     return out;
 }
 
+
+/**  
+ * Scores a string S using the simple method described in the paper:
+ *
+ * "Probabilistic suffix array: efficient modeling and prediction of protein families"
+ * by Jie Lin, Donald Adjeroh and Bing-Hua Jiang.
+ * 
+ * with the additional optimization of updating the score only at unsuccessful Weiner 
+ * links. This works because the sum of differences of logarithms telescopes along a 
+ * maximal chain of successful Weiner links.
+ *
+ * @author Fabio Cunial
+ * @return the base-2 logarithm of the total probability of S.
+ */
+/* template <typename input_stream_t> double score_string_lin(input_stream_t& S, Global_Data& G) {
+    const int64_t BWT_SIZE = G.revbwt->size();
+    const double LOG2_BWTSIZE_MINUS_ONE = log2(BWT_SIZE-1);
+    const Interval LARGEST_INTERVAL(0,G.revbwt->size()-1);
+    
+    char c;
+    int64_t sizeFrom, sizeTo, node;
+    double logSizeFirst, logSizeLast, out;
+    Pruned_Topology_Mapper mapper(G.rev_st_bpr,G.pruning_marks); // Also works for non-pruned topology
+    Parent_Support PS(G.rev_st_bpr);
+    Interval I_W, I_Wc;
+    
+    out=0.0;
+    I_W=LARGEST_INTERVAL;
+    sizeFrom=BWT_SIZE; sizeTo=0;
+    logSizeFirst=LOG2_BWTSIZE_MINUS_ONE;  // We don't want to count in the final dollar
+    while (S.getchar(c)) {
+	// Trying a Weiner link by c from the current string W
+        I_Wc=G.revbwt->search(I_W,c);
+        sizeTo=I_Wc.size();
+        if (sizeTo>0) {  // Successful Weiner link
+	        I_W=I_Wc;
+		sizeFrom=sizeTo;
+		continue;
+	}
+		
+	// Unsuccessful Weiner link:
+		
+	// 0. c is not in the alphabet of the index
+	if (sizeFrom==BWT_SIZE) {
+		logSizeFirst=LOG2_BWTSIZE_MINUS_ONE;
+		continue;
+	}
+		
+	// 1. Cumulating the probability
+	logSizeLast=log2(sizeFrom);
+	out+=logSizeLast-logSizeFirst;
+		
+        // 2. Finding the BWT interval of the longest suffix of W followed by c.
+	node=mapper.leaves_to_node(I_W);
+        while (sizeTo==0 && sizeFrom<BWT_SIZE) {
+            node=PS.parent(node);
+            I_W=mapper.node_to_leaves(node);
+            sizeFrom=I_W.size();
+            I_Wc=G.revbwt->search(I_W,c);
+            sizeTo=I_Wc.size();            
+        }
+	if (sizeFrom==BWT_SIZE) {
+		// c is not in the alphabet of the index
+		logSizeFirst=LOG2_BWTSIZE_MINUS_ONE;
+		continue;
+	}
+		
+	// 3. Successful Weiner link from an ancestor
+	logSizeFirst=log2(sizeFrom);
+        I_W=I_Wc;
+	sizeFrom=sizeTo;
+    }
+    if (sizeTo>0) out+=log2(sizeTo)-logSizeFirst;
+    return out;
+}
+*/
+
 // Input stream must have a function getchar(char& c), which returns
 // false it the end of the stream was reached
 template <typename input_stream_t>
