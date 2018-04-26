@@ -147,6 +147,7 @@ Full list of flags:
 [KERNELSPAPER]: https://link.springer.com/article/10.1007/s00453-017-0286-4 "A framework for space-efficient string kernels"
 [SAPAPER]: https://academic.oup.com/bioinformatics/article/28/10/1314/211256 "Probabilistic suffix array: efficient modeling and prediction of protein families"
 [PREZZA]: https://github.com/nicolaprezza/lz-rlbwt
+[cmake]: http://www.cmake.org/ "CMake tool"
 
 <!---
 If there is a problem with some of the flags maybe I updated the flags but forgot
