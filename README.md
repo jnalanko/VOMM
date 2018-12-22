@@ -63,9 +63,9 @@ mkdir models
 
 Full list of flags:
 
+* `--reference-raw [file path]` Assumes that every byte in the input file is a character of a single input string, i.e. that the input file contains exactly one string with no header.
+
 * `--reference-fasta [file path]` Takes the input file in the fasta-format. Not tested very well :)
-    
-* `--reference-raw [file path]` Takes the input in a raw text file.
     
 * `--outputdir [directory path]` Where to write the built model. This directory must exist before running! The model consists of a set of files such that the filename of each model file is prefixed by the filename. This means that if you build models for two files with the same filename into the same output directory, then the latter model will overwrite the former.
      
