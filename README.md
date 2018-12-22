@@ -178,18 +178,15 @@ are parsed.
 -->
 
 
-External resources used
+
+Related software
 ---------
 
 This repository includes:
 
-* portions of code from [lz-rlbwt][PREZZA] by Nicola Prezza, for the run-length-encoded BWT;
+* Portions of code from [lz-rlbwt][PREZZA] by Nicola Prezza, for the run-length-encoded BWT.
 
-* the [BD_BWT_index](https://github.com/jnalanko/BD_BWT_index) by Jarno Alanko, for the bidirectional BWT index used during construction.
-
-
-Related software
----------
+* The [BD_BWT_index](https://github.com/jnalanko/BD_BWT_index) by Jarno Alanko, for the bidirectional BWT index used during construction.
 
 The following software implements variable-order Markov models or interpolated Markov models as well:
 
