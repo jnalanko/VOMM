@@ -190,4 +190,8 @@ This repository includes:
 Related software
 ---------
 
+* [CST based language model](https://github.com/eehsan/cstlm)
+* [Probabilistic suffix array](http://community.wvu.edu/~daadjeroh/projects/)
+* [Probabilistic suffix tree](http://bejerano.stanford.edu/resources.html)
+
 
