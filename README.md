@@ -6,10 +6,12 @@ Tools for building and querying space-efficient representations of variable-orde
 References
 ------------
 
-The details of this code are described in the following paper, which you are encouraged to cite if you use the tool:
+The details of this code are described in the following papers:
 
 * F. Cunial, J. Alanko, and D. Belazzougui (2018). A framework for space-efficient variable-order Markov models. bioRxiv 443101; doi: https://doi.org/10.1101/443101
 * D. Belazzougui, and F. Cunial (2017). [A framework for space-efficient string kernels](https://link.springer.com/article/10.1007/s00453-017-0286-4). Algorithmica 79.3 (2017): 857-883.
+
+Please cite the bioRxiv paper if you use the tool.
 
 
 Requirements
