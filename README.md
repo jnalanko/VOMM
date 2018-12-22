@@ -190,7 +190,7 @@ Related software
 
 The following software implements variable-order Markov models or interpolated Markov models as well:
 
-* [CST based language model](https://github.com/eehsan/cstlm): implements interpolated Markov models with Kneser-Ney smoothing using a similar setup of data structures as in this project.
+* [CST-based language model](https://github.com/eehsan/cstlm): implements interpolated Markov models with Kneser-Ney smoothing using a similar setup of data structures as in this project.
 
 * [Probabilistic suffix array](http://community.wvu.edu/~daadjeroh/projects/): implements just one scoring method, based on the longest match at each position of the query, using suffix arrays. 
 
