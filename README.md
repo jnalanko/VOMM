@@ -190,8 +190,8 @@ This repository includes:
 Related software
 ---------
 
-* [CST based language model](https://github.com/eehsan/cstlm)
-* [Probabilistic suffix array](http://community.wvu.edu/~daadjeroh/projects/)
-* [Probabilistic suffix tree](http://bejerano.stanford.edu/resources.html)
+* [CST based language model](https://github.com/eehsan/cstlm) Implements interpolated Markov models with Kneser-Ney smoothing using a similar setup of data structures as in this project.
 
+* [Probabilistic suffix array](http://community.wvu.edu/~daadjeroh/projects/) Implements a specific scoring method, based on the longest match at each position of the query, using suffix arrays. 
 
+* [Probabilistic suffix tree](http://bejerano.stanford.edu/resources.html) Pointer-based trie implementation of a variable-order Markov model. Supports a specific context selection criterion.
