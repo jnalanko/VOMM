@@ -63,7 +63,7 @@ The `tests` executable runs the test suite, and takes approximately 10 minutes.
 Building and rebuilding models
 ------------
 
-The `build_model_optimized` executable builds a variable-order Markov model from a file. Example:
+The `build_model_optimized` executable builds a variable-order Markov model from a file, whose alphabet is assumed to be the set of its distinct bytes. Example:
 
 ```
 mkdir models
@@ -130,7 +130,9 @@ Full list of flags:
 Computing the score of a query
 ---------
 
-Program `score_string_optimized` scores a string given a model that had been previously built with `build_model_optimized`. It writes log-probabilities to `stdout`, one line per query, and it writes to `stderr` a progress report while it's running. Example:
+Given a model that had been previously built with `build_model_optimized`, program `score_string_optimized` scores a query string given in input, whose alphabet is assumed to be the set of its distinct bytes. The program writes log-probabilities to `stdout`: if the input is in multi-FASTA format (see below), the program outputs one line per FASTA sequence. While it's running, the program writes a progress report to `stderr`. 
+
+Example usage:
 
 ```
 ./score_string_optimized --query-raw queries.txt --dir models --file data.txt --escapeprob 0.05
