@@ -65,7 +65,7 @@ Full list of flags:
 
 * `--reference-raw [file path]` Assumes that every byte in the input file is a character of a single input string, i.e. that the input file contains exactly one string with no header.
 
-* `--reference-fasta [file path]` Assumes that the input file is in multi-FASTA format, i.e. that every line is either a FASTA header or it contains parts of a string. Use this flag to train a Markov model from a set of strings rather than from a single string.
+* `--reference-fasta [file path]` Assumes that the input file is in multi-FASTA format, i.e. that every line is either a FASTA header or it contains part of a string. Use this flag to train a Markov model from a set of strings rather than from a single string.
     
 * `--outputdir [directory path]` Where to write the built model. This directory must exist before running! The model consists of a set of files such that the filename of each model file is prefixed by the filename. This means that if you build models for two files with the same filename into the same output directory, then the latter model will overwrite the former.
      
@@ -131,7 +131,7 @@ Full list of flags:
 
 * `--query-raw [file path]` Assumes that every byte in the input file is a character of a single query string, i.e. that the input file contains exactly one string with no header.
 
-* `--query-fasta [file path]` Assumes that the input file is in multi-FASTA format, i.e. that every line is either a FASTA header or it contains parts of a query string. Use this flag to compute a distinct score for every string in a set.
+* `--query-fasta [file path]` Assumes that the input file is in multi-FASTA format, i.e. that every line is either a FASTA header or it contains part of a query string. Use this flag to compute a distinct score for every string in a set.
 
 Takes in the queries in fasta-format. Each read is one query. Not tested very well.
       
