@@ -177,3 +177,8 @@ This repository includes:
 
 * the [BD_BWT_index](https://github.com/jnalanko/BD_BWT_index) by Jarno Alanko, for the bidirectional BWT index used during construction.
 
+
+Related software
+---------
+
+
