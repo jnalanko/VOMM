@@ -9,6 +9,7 @@ References
 The details of this code are described in the following paper, which you are encouraged to cite if you use the tool:
 
 * F. Cunial, J. Alanko, and D. Belazzougui (2018). A framework for space-efficient variable-order Markov models. bioRxiv 443101; doi: https://doi.org/10.1101/443101
+* D. Belazzougui, and F. Cunial (2017). [A framework for space-efficient string kernels](https://link.springer.com/article/10.1007/s00453-017-0286-4). Algorithmica 79.3 (2017): 857-883.
 
 
 Requirements
@@ -143,8 +144,6 @@ Full list of flags:
 * `--query-raw [file path]` Assumes that every byte in the input file is a character of a single query string, i.e. that the input file contains exactly one string with no header.
 
 * `--query-fasta [file path]` Assumes that the input file is in multi-FASTA format, i.e. that every line is either a FASTA header or it contains part of a query string. Use this flag to compute a distinct score for every string in a set.
-
-Takes in the queries in fasta-format. Each read is one query. Not tested very well.
       
 * `--dir [directory path]` Directory where the model is stored.
     
