@@ -129,10 +129,10 @@ Program `score_string_optimized` scores a string given a model that had been pre
 
 Full list of flags:
 
+* `--query-raw [file path]` Assumes that every byte in the input file is a character of a single input string, i.e. that the input file contains exactly one string with no header.
+
 * `--query-fasta [file path]` Takes in the queries in fasta-format. Each read is one query. Not tested very well.
-    
-* `--query-raw [file path]` Takes in single raw text file as one big query.
-    
+      
 * `--dir [directory path]` Directory where the model is stored.
     
 * `--file [filename]` Filename of the reference string. Only the filename, not the full path. 
