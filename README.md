@@ -63,7 +63,7 @@ The `tests` executable runs the test suite, and takes approximately 10 minutes.
 
 
 
-Building and rebuilding models
+Building models
 ------------
 
 The `build_model_optimized` executable builds a variable-order Markov model from a file, whose alphabet is assumed to be the set of its distinct bytes. Example:
@@ -102,6 +102,10 @@ Full list of flags:
   * `stats.depths_and_scores.txt`: one line for each context: `[string depth] [tree depth] [score(s)]`. The score(s) are:
     * In case of `--KL`, `--entropy` or `--pnorm`, the value that is compared against the threshold. 
     * In case of `--four-thresholds`, there are three values corresponding to equations 2,3 and 4 in the paper "[A framework for space-efficient string kernels][KERNELSPAPER]".
+
+
+Rebuilding models
+------------
 
 If a model had already been built for a string, program `reconstruct_optimized` rebuilds just its contexts part. Example:
 
