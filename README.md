@@ -131,7 +131,7 @@ Full list of flags:
 Computing the score of a query
 ---------
 
-Given a model that had been previously built with `build_model_optimized`, program `score_string_optimized` scores a query string given in input, whose alphabet is assumed to be the set of its distinct bytes. The program writes log-probabilities to `stdout`: if the input is in multi-FASTA format (see below), the program outputs one line per FASTA sequence. While it's running, the program writes a progress report to `stderr`. 
+Given a model that had been previously built with `build_model_optimized`, program `score_string_optimized` scores a query string given in input, whose alphabet is assumed to be the set of its distinct bytes and might be different from the alphabet of the model. The program writes log-probabilities to `stdout`: if the input is in multi-FASTA format (see below), the program outputs one line per FASTA sequence. While it's running, the program writes a progress report to `stderr`. 
 
 Example usage:
 
