@@ -173,9 +173,9 @@ Flags:
 Related software
 ---------
 
-This repository includes:
+This repository includes portions of code from:
 
-* Portions of code from [lz-rlbwt][PREZZA] by Nicola Prezza, for the run-length-encoded BWT.
+* [lz-rlbwt][PREZZA] by Nicola Prezza, for the run-length-encoded BWT.
 
 * The [BD_BWT_index](https://github.com/jnalanko/BD_BWT_index) by Jarno Alanko, for the bidirectional BWT index used during construction.
 
