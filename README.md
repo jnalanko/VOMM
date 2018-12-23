@@ -81,11 +81,11 @@ Flags:
     
 * `--outputdir [directory path]` Where to store the model. This directory must exist before running. The model consists of a set of files such that the name of each file is prefixed by the name of the input file: thus, if you build models from two files with the same filename, and store them in the same output directory, the latter model overwrites the former.
      
-* `--maxreps-pruning` Enables pruning the topologies by maximal repeats (see the bioRxiv paper for details).
+* `--maxreps-pruning` Keeps just maximal repeats in the topologies (see the bioRxiv paper for details).
 
 * `--rle` Enables run-length encoding the BWT (see the bioRxiv paper for details).
     
-* `--depth [integer depth]` Enables pruning the topologies by depth (see the bioRxiv paper for details). **This option enables also pruning by maximal repeats**.
+* `--depth [integer depth]` Keeps just maximal repeats of a given maximum length in the topologies (see the bioRxiv paper for details). **This option enables also pruning by maximal repeats**.
    
 * `--entropy [float threshold]` Selects contexts based on entropy (see the bioRxiv paper for details).
    
