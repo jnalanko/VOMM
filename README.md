@@ -73,35 +73,35 @@ mkdir models
 ./build_model_optimized --reference-raw data.txt --entropy 0.2 --outputdir models --maxreps-pruning --rle
 ```
 
-Full list of flags:
+Flags:
 
-* `--reference-raw [file path]` Assumes that every byte in the input file is a character of a single input string, i.e. that the input file contains exactly one string with no header.
+* `--reference-raw [file path]` Assumes that the input file contains exactly one string with no header: every byte in the input file is assumed to be a character of such string.
 
-* `--reference-fasta [file path]` Assumes that the input file is in multi-FASTA format, i.e. that every line is either a FASTA header or it contains part of a string. Use this flag to train a Markov model from a set of strings rather than from a single string.
+* `--reference-fasta [file path]` Assumes that the input file is in multi-FASTA format, i.e. that every line is either a FASTA header, or it contains part of a string. Use this flag to train a Markov model from a set of strings rather than from a single string.
     
-* `--outputdir [directory path]` Where to write the built model. This directory must exist before running! The model consists of a set of files such that the filename of each model file is prefixed by the filename. This means that if you build models for two files with the same filename into the same output directory, then the latter model will overwrite the former.
+* `--outputdir [directory path]` Where to store the model. This directory must exist before running. The model consists of a set of files such that the name of each file is prefixed by the name of the input file: thus, if you build models from two files with the same filename, and store them in the same output directory, the latter model overwrites the former.
      
-* `--maxreps-pruning` Enables maxrep pruning.
+* `--maxreps-pruning` Enables pruning the topologies by maximal repeats (see the bioRxiv paper for details).
+
+* `--rle` Enables run-length encoding the BWT (see the bioRxiv paper for details).
     
-* `--rle` Enables run-length encoding.
-    
-* `--depth [integer depth]` Enables depth pruning to the given depth. **Also enables maxrep pruning**.
+* `--depth [integer depth]` Enables pruning the topologies by depth (see the bioRxiv paper for details). **This option enables also pruning by maximal repeats**.
    
-* `--entropy [float threshold]` Use entropy-style contexts with the given threshold.
+* `--entropy [float threshold]` Selects contexts based on entropy (see the bioRxiv paper for details).
    
-* `--KL [float threshold]` Use Kullback–Leibler-style contexts with the given threshold.
+* `--KL [float threshold]` Selects contexts based on Kullback–Leibler divergence (see the bioRxiv paper for details).
     
-* `--pnorm [integer p] [float threshold]` Use p-norm-style contexts with the given threshold.
+* `--pnorm [integer p] [float threshold]` Selects contexts based on p-norm (see the bioRxiv paper for details).
     
-* `--four-thresholds [float tau1] [float tau2] [float tau3] [float tau4]` Use the context formula with the four thresholds *tau1*, *tau2*, *tau3*, *tau4* from the paper "[A framework for space-efficient string kernels][KERNELSPAPER]".
+* `--four-thresholds [float tau1] [float tau2] [float tau3] [float tau4]` Selects contexts based on the formula with the four thresholds *tau1*, *tau2*, *tau3*, *tau4* (see "[A framework for space-efficient string kernels][KERNELSPAPER]" for details).
     
-* `--store-depths` Stores the string depth of every maximal repeat in the topology as binary integers into `outputdir + "/" + filename_prefix + ".string_depths"`. The binary representation has length that is just enough to store the largest depth.    The file is created even if the option is not enabled, but in that case it will be very small.
+* `--store-depths` Stores the string depth of every maximal repeat in the topology as a binary integer in file `outputdir + "/" + filename_prefix + ".string_depths"`. The binary representation of each length has just enough bits to store the largest depth value. The file is created even if the option is not enabled: in this case its size is negligible.
 
 * `--context-stats` Computes statistics on the contexts. Writes two files into the model directory:
   * `stats.context_summary.txt`: number of context candidates and number of contexts.
   * `stats.depths_and_scores.txt`: one line for each context: `[string depth] [tree depth] [score(s)]`. The score(s) are:
-    * In case of `--KL`, `--entropy` or `--pnorm`, the value that is compared against the threshold. 
-    * In case of `--four-thresholds`, there are three values corresponding to equations 2,3 and 4 in the paper "[A framework for space-efficient string kernels][KERNELSPAPER]".
+    * In case of `--KL`, `--entropy` or `--pnorm`: the value that is compared against the threshold. 
+    * In case of `--four-thresholds`: the three values corresponding to equations 2,3 and 4 in the paper "[A framework for space-efficient string kernels][KERNELSPAPER]".
 
 
 Rebuilding models
