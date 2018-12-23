@@ -59,7 +59,7 @@ make tests
 make optimized
 ```
 
-The `tests` executable runs the test suite, and takes approximately 10 minutes.
+The `tests` executable runs the test suite, and takes approximately 10 minutes to complete.
 
 
 
