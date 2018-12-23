@@ -107,7 +107,7 @@ Flags:
 Rebuilding models
 ------------
 
-If a model was already built from a file, program `reconstruct_optimized` rebuilds just its contexts part. Example usage:
+Program `reconstruct_optimized` rebuilds just the contexts part of an existing model. Example usage:
 
 ```
 ./reconstruct_optimized --file data.txt --entropy 10 --dir models
@@ -118,8 +118,8 @@ Flags:
 * `--dir [directory path]` The directory in which the existing model is stored.
 
 * `--file` The name of the file from which the model was built (just the
-    filename, not the full path: i.e. if the input file was `./foo/bar/data.txt`,
-    give only `data.txt`). This is needed so that the code knows the prefix of the 
+    filename, not the full path: i.e. if the input file is `./foo/bar/data.txt`,
+    give just `data.txt`). This is needed so that the code knows the prefix of the 
     model files.
     
 * `--entropy [float threshold]` As above.
