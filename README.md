@@ -66,7 +66,7 @@ The `tests` executable runs the test suite, and takes approximately 10 minutes t
 Building models
 ------------
 
-The `build_model_optimized` executable builds a variable-order Markov model from a file, whose alphabet is assumed to be the set of its distinct bytes. Example:
+The `build_model_optimized` executable builds a variable-order Markov model from a file, whose alphabet is assumed to be the set of its distinct bytes. Example usage:
 
 ```
 mkdir models
@@ -107,30 +107,30 @@ Flags:
 Rebuilding models
 ------------
 
-If a model had already been built for a string, program `reconstruct_optimized` rebuilds just its contexts part. Example:
+If a model was already built from a file, program `reconstruct_optimized` rebuilds just its contexts part. Example usage:
 
 ```
 ./reconstruct_optimized --file data.txt --entropy 10 --dir models
 ```
 
-Full list of flags:
+Flags:
 
-* `--dir [directory path]` The directory where the model is.
+* `--dir [directory path]` The directory in which the existing model is stored.
 
-* `--file` The filename of the input data from which the model was built. Only the
-    filename, not the full path. That is, if the data is at `./foo/bar/data.txt`,
-    give only `data.txt`. This is needed so that the code knows the prefix of the 
+* `--file` The name of the file from which the model was built (just the
+    filename, not the full path: i.e. if the input file was `./foo/bar/data.txt`,
+    give only `data.txt`). This is needed so that the code knows the prefix of the 
     model files.
     
-* `--entropy [float threshold]` Use entropy-style contexts with the given threshold.
+* `--entropy [float threshold]` As above.
    
-* `--KL [float threshold]` Use Kullback–Leibler-style contexts with the given threshold.
+* `--KL [float threshold]` As above.
     
-* `--pnorm [integer p] [float threshold]` Use p-norm-style contexts with the given threshold.
+* `--pnorm [integer p] [float threshold]` As above.
     
-* `--four-thresholds [float tau1] [float tau2] [float tau3] [float tau4]` Use the context formula with the four thresholds, as described above.
+* `--four-thresholds [float tau1] [float tau2] [float tau3] [float tau4]` As above.
 
-* `--context-stats` Computes statistics on the contexts, as described above.
+* `--context-stats` As above.
 
 
 
