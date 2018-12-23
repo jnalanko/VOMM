@@ -137,7 +137,7 @@ Flags:
 Computing the score of a query
 ---------
 
-Given a model that had been previously built with `build_model_optimized`, program `score_string_optimized` scores a query string given in input, whose alphabet is assumed to be the set of its distinct bytes and might be different from the alphabet of the model. The program writes log-probabilities to `stdout`: if the input is in multi-FASTA format (see below), the program outputs one line per FASTA sequence. While it's running, the program writes a progress report to `stderr`. 
+Program `score_string_optimized` scores a query string, or a set of query strings, against a given model. The alphabet of the query strings is assumed to be the set of their distinct bytes, and it can be different from the alphabet of the model. The program writes log-probabilities to `stdout`: if the input is in multi-FASTA format (see below), the program outputs one line per FASTA sequence. While it's running, the program writes a progress report to `stderr`. 
 
 Example usage:
 
@@ -145,42 +145,29 @@ Example usage:
 ./score_string_optimized --query-raw queries.txt --dir models --file data.txt --escapeprob 0.05
 ```
 
-Full list of flags:
+Flags:
 
-* `--query-raw [file path]` Assumes that every byte in the input file is a character of a single query string, i.e. that the input file contains exactly one string with no header.
+* `--query-raw [file path]` Assumes that the input file contains exactly one query string with no header: every byte in the input file is assumed to be a character of such string.
 
-* `--query-fasta [file path]` Assumes that the input file is in multi-FASTA format, i.e. that every line is either a FASTA header or it contains part of a query string. Use this flag to compute a distinct score for every string in a set.
+* `--query-fasta [file path]` Assumes that the input file is in multi-FASTA format, i.e. that every line is either a FASTA header, or it contains part of a query string. Use this flag to compute a distinct score for every string in a set.
       
 * `--dir [directory path]` Directory where the model is stored.
     
-* `--file [filename]` Filename of the reference string. Only the filename, not the full path. 
-    That is, if the data is at `./foo/bar/data.txt`, give only `data.txt`. This 
-    is needed so that the code knows the prefix of the model files.
+* `--file [filename]` The name of the file from which the model was built (just the
+    filename, not the full path: i.e. if the input file is `./foo/bar/data.txt`,
+    give just `data.txt`). This is needed so that the code knows the prefix of the 
+    model files.
 
-* `--escapeprob [float prob]` Escape probability used in scoring.
+* `--escapeprob [float prob]` Escape probability used for scoring (see the bioRxiv paper for details).
 
-* `--recursive-fallback` Uses the recursive scoring method from the paper "[A framework for space-efficient string kernels][KERNELSPAPER]".
+* `--recursive-fallback` Uses recursive scoring (see the bioRxiv paper for details).
 
-* `--lin-scoring` Uses the scoring method from the paper "[Probabilistic suffix array: efficient modeling and prediction of protein families][SAPAPER]".
+* `--lin-scoring` Uses the scoring method defined in the paper "[Probabilistic suffix array: efficient modeling and prediction of protein families][SAPAPER]".
 
 
-[KERNELSPAPER]: https://link.springer.com/article/10.1007/s00453-017-0286-4 "A framework for space-efficient string kernels"
 [SAPAPER]: https://academic.oup.com/bioinformatics/article/28/10/1314/211256 "Probabilistic suffix array: efficient modeling and prediction of protein families"
 [PREZZA]: https://github.com/nicolaprezza/lz-rlbwt
 [cmake]: http://www.cmake.org/ "CMake tool"
-
-<!---
-If there is a problem with some of the flags maybe I updated the flags but forgot
-to update this documentation, or maybe I typoed something. In this case please check
-the main-function in score_string.cpp to see what the flags really are and how they 
-are parsed.    
-    
-If there is a problem with some of the flags maybe I updated the flags but forgot
-to update this documentation, or maybe I typoed something. In this case please check
-the main-function in build_model.cpp to see what the flags really are and how they 
-are parsed.
--->
-
 
 
 Related software
