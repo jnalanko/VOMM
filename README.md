@@ -17,9 +17,9 @@ Please cite the bioRxiv paper if you use this tool.
 Requirements
 ------------
 
-* A modern, C++11 ready compiler such as `g++` version 4.9 or higher or `clang` version 3.2 or higher.
+* A modern, C++11 ready compiler such as `g++` version 4.9 or higher, or `clang` version 3.2 or higher.
 * The [cmake][cmake] build system.
-* A 64-bit operating system. Either Mac OS X or Linux are currently supported.
+* A 64-bit operating system. The code has been tested on both Mac OS X and Linux.
 
 
 Installing and testing
