@@ -93,7 +93,7 @@ Flags:
     
 * `--pnorm [integer p] [float threshold]` Selects contexts based on p-norm (see the bioRxiv paper for details).
     
-* `--four-thresholds [float tau1] [float tau2] [float tau3] [float tau4]` Selects contexts based on the formula with the four thresholds *tau1*, *tau2*, *tau3*, *tau4* (see "[A framework for space-efficient string kernels][KERNELSPAPER]" for details).
+* `--four-thresholds [float tau1] [float tau2] [float tau3] [float tau4]` Selects contexts based on the formula with the four thresholds *tau1*, *tau2*, *tau3*, *tau4* (see the Algorithmica paper for details).
     
 * `--store-depths` Stores the string depth of every maximal repeat in the topology as a binary integer in file `outputdir + "/" + filename_prefix + ".string_depths"`. The binary representation of each length has just enough bits to store the largest depth value. The file is created even if the option is not enabled: in this case its size is negligible.
 
@@ -101,7 +101,7 @@ Flags:
   * `stats.context_summary.txt`: number of context candidates and number of contexts.
   * `stats.depths_and_scores.txt`: one line for each context: `[string depth] [tree depth] [score(s)]`. The score(s) are:
     * In case of `--KL`, `--entropy` or `--pnorm`: the value that is compared against the threshold. 
-    * In case of `--four-thresholds`: the three values corresponding to equations 2,3 and 4 in the paper "[A framework for space-efficient string kernels][KERNELSPAPER]".
+    * In case of `--four-thresholds`: the three values corresponding to equations 2,3 and 4 in the Algorithmica paper.
 
 
 Rebuilding models
