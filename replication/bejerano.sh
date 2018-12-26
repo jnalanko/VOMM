@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Script to create an index with the following software:
 #
 # http://bejerano.stanford.edu/pst_v201.zip
