@@ -170,7 +170,7 @@ Flags:
 [cmake]: http://www.cmake.org/ "CMake tool"
 
 
-Related software
+Related code
 ---------
 
 This repository includes portions of code from:
