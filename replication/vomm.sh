@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Script to create an index with the software described 
 # in the submitted paper.
 #
