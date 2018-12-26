@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Script to create an index with the following software:
 #
 # http://www.csee.wvu.edu/~adjeroh/projects/PSA/PSA_software.tar
