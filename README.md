@@ -28,7 +28,6 @@ Installing and testing
 Install the [sdsl-lite library](https://github.com/simongog/sdsl-lite) at the project root:
 
 ```
-git clone https://github.com/simongog/sdsl-lite
 cd sdsl-lite
 sh install.sh
 cd ..
