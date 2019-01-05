@@ -80,7 +80,7 @@ Flags:
     
 * `--outputdir [directory path]` Where to store the model. This directory must exist before running. The model consists of a set of files such that the name of each file is prefixed by the name of the input file: thus, if you build models from two files with the same filename, and store them in the same output directory, the latter model overwrites the former.
      
-* `--maxreps-pruning` Keeps just maximal repeats in the topologies (see the bioRxiv paper for details).
+* `--maxreps-pruning` Keeps just maximal repeats in the topologies, and run-length-encodes the balanced-parentheses representation of the suffix-link tree (see the bioRxiv paper for more details).
 
 * `--rle` Enables run-length encoding the BWT (see the bioRxiv paper for details).
     
