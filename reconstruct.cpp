@@ -87,7 +87,8 @@ public:
 int score_string_main(int argc, char** argv){
     
     if(argc < 4){
-        cerr << "Marks contexts again. Usage: see readme." << endl;
+        cerr << "Marks contexts again." << endl;
+        cerr << "Usage: see README.md" << endl;
         return -1;
     }
     

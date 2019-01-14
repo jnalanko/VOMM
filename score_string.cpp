@@ -112,8 +112,8 @@ public:
 
 int main(int argc, char** argv){
     if(argc < 4){
-        cerr << "Computes the probability of string S against string T" << endl;
-        cerr << "Usage: ./score_string [--query-fasta or --query-raw] S.txt <rest of the options>" << endl;
+        cerr << "Computes the probability of string against a VOMM index" << endl;
+        cerr << "Usage: see README.md" << endl;
         return -1;
     }
     

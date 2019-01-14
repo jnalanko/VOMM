@@ -32,7 +32,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 /** Define to the version of this package. **/
-#define PROJECT_VERSION_FULL "2.0.1-13-g0f24acd"
+#define PROJECT_VERSION_FULL "2.0.2"
 
 /** Define to 1 if you have the header files. **/
 #define HAVE_INTTYPES_H 1

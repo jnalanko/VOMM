@@ -127,8 +127,8 @@ public:
 
 int build_model_main(int argc, char** argv){
     if(argc < 4){
-        cerr << "Computes the probability of string S against string T" << endl;
-        cerr << "Usage: ./build_model [--reference-fasta or --reference-raw] T.txt <then options>" << endl;
+        cerr << "Builds a VOMM index" << endl;
+        cerr << "Usage: see README.md" << endl;
         return -1;
     }
     
