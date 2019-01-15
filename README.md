@@ -65,7 +65,7 @@ The `tests` executable runs the test suite, and takes approximately 10 minutes t
 Building models
 ------------
 
-The `build_model_optimized` executable builds a variable-order Markov model from a file, whose alphabet is assumed to be the set of its distinct character. Example usage:
+The `build_model_optimized` executable builds a variable-order Markov model from a file, whose alphabet is assumed to be the set of its distinct characters. Example usage:
 
 ```
 mkdir models
