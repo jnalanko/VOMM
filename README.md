@@ -3,6 +3,8 @@ Space-efficient variable-order Markov models
 
 Tools for building and querying space-efficient representations of variable-order Markov models and interpolated Markov models. Such representations support several context-selection criteria, scoring functions, probability smoothing methods, and interpolations, while taking less space than implementations based on tries, suffix trees, and suffix arrays. This software can handle multi-gigabyte training and query datasets.
 
+**Please open an issue if you need a context selection criterion or a scoring criterion that are not currently implemented.**
+
 References
 ------------
 
